@@ -1,8 +1,8 @@
 {
-  "name": "asNEAT",
-  "version": "0.3.0",
-  "description": "Audio Synthesis - NeuroEvolution of Augmenting Topologies built on the Web Audio API",
-  "main": "dist/asNEAT.min.js",
+  "name": "asNEAT-visualizer",
+  "version": "0.1.0",
+  "description": "A set of visualizations for an asNEAT network",
+  "main": "./dist/asNEAT-visualizer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -30,6 +30,9 @@
     "grunt-contrib-qunit": "~0.4.0",
     "grunt-contrib-watch": "~0.5.3",
     "grunt-contrib-concat": "~0.3.0",
-    "grunt-concurrent": "~0.4.3"
+    "grunt-concurrent": "~0.4.3",
+    "grunt-es6-module-transpiler": "~0.6.0",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-copy": "~0.5.0"
   }
 }

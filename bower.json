@@ -1,12 +1,12 @@
 {
   "name": "asNEAT-visualizer",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "homepage": "https://github.com/davidlukerice/asNEAT-visualizer",
   "authors": [
     "David Rice <davidlukerice@gmail.com>"
   ],
   "description": "A set of visualizations for an asNEAT network",
-  "main": "./src/asNEAT.js",
+  "main": "./dist/asNEAT-visualizer.js",
   "keywords": [
     "asNEAT-visualizer",
     "asNEAT",
@@ -21,7 +21,6 @@
   "ignore": [
     "**/.*",
     "node_modules",
-    "bower_components",
     "vendor",
     "test",
     "tests",

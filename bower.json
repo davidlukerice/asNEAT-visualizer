@@ -27,6 +27,8 @@
     "tests",
     "src"
   ],
-  "dependencies": [
-  ]
+  "dependencies": {
+    "jquery": "~1.11.0",
+    "asNEAT": "~0.3.0"
+  }
 }

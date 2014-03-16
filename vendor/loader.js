@@ -74,9 +74,9 @@ var define, requireModule, require, requirejs;
     return parentBase.join('/');
   }
 
-  requirejs.entries = requirejs._eak_seen = registry;
+  requirejs.entries = registry;
   requirejs.clear = function(){
-    requirejs.entries = requirejs._eak_seen = registry = {};
+    requirejs.entries = registry = {};
     seen = {};
   };
 })();

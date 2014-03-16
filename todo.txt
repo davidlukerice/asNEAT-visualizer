@@ -2,8 +2,10 @@ Current:
 
 
 Planned:
+- concat_sourcemap
+
 - graph view
 - frequency view
+- waveworm view
 - spectrogram view
 - 3d spectrogram view
-- waveworm view

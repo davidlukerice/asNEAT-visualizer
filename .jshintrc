@@ -5,7 +5,8 @@
     "console": true,
     "module": true,
     "$": true,
-    "_": true
+    "_": true,
+    "d3": true
   },
   "node" : false,
   "browser" : false,

@@ -9,7 +9,7 @@
     <script src="./dist/asNEAT-visualizer.js"></script>
   </head>
   <body>
-    
+
     <h2>Controls</h2>
     <button class='play'>play</button>
     <button class="randomMutate">Random Mutate</button>
@@ -22,7 +22,7 @@
     <br>
     <br>
     <h2>Visualization</h2>
-    <div class="currentNetwork">
+    <div class="network">
     </div>
 
     <br>
@@ -38,13 +38,12 @@
               log = ns.Utils.log,
               network = new ns.Network(),
               Visualizer = require('asNEAT/asNEAT-visualizer')['default'];
-          
+
           var visualization = Visualizer.createVisualization({
             network: network
           });
 
           updateVisualization();
-          
         });
 
         function setupHandler() {

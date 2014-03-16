@@ -14,8 +14,8 @@
     <button class='play'>play</button>
     <button class="randomMutate">Random Mutate</button>
     <button class="splitMutate">split Mutate</button>
-    <button class="addOscillator" disabled="">add Oscillator</button>
-    <button class="addConnection">Add Connection</button>
+    <button class="addOscillator">add Oscillator</button>
+    <button class="addConnection" disabled>Add Connection</button>
     <button class="mutateWeight">Mutate Weights</button>
     <button class="mutateNodeParameters">Mutate Node parameter</button>
 
@@ -23,6 +23,10 @@
     <br>
     <h2>Visualization</h2>
     <div class="network">
+    </div>
+
+    <h2>toString</h2>
+    <div class="networkToString">
     </div>
 
     <br>
@@ -33,17 +37,21 @@
 
     <script type="text/javascript">
       !function() {
+        var network,
+            visualization;
+
         $(function() {
           var ns = asNEAT,
               log = ns.Utils.log,
-              network = new ns.Network(),
               Visualizer = require('asNEAT/asNEAT-visualizer')['default'];
+          network = new ns.Network();
 
-          var visualization = Visualizer.createVisualization({
+          visualization = Visualizer.createVisualization({
             network: network
           });
 
           updateVisualization();
+          setupHandler();
         });
 
         function setupHandler() {
@@ -77,8 +85,8 @@
         }
 
         function updateVisualization() {
-            // todo: update visualization?
-            //$('.currentNetwork').html(network.toString());
+            visualization.refresh();
+            $('.networkToString').html(network.toString());
           }
       }();
     </script>

@@ -9,6 +9,9 @@ var Visualization = function(parameters) {
   svg.append('g').attr('class', 'nodes');
   this.svg = svg;
 
+  this.vNodes = [];
+  this.vConnections = [];
+
   this.refresh();
 };
 Visualization.prototype.defaultParameters = {
@@ -25,14 +28,19 @@ Visualization.prototype.defaultParameters = {
  **/
 Visualization.prototype.getVisualizationNetwork = function() {
   
-  var nodes = [],
-      connections = [];
+  var nodes = this.vNodes,
+      connections = this.vConnections;
 
   _.forEach(this.network.nodes, function(node) {
+    var vNode = _.find(nodes, {'asNEATNode': node});
+    if (vNode) return;
     nodes.push(VNode.createVNodeFrom(node));
   });
 
   _.forEach(this.network.connections, function(connection) {
+    var conn = _.find(connections, {'asNEATConnection': connection});
+    if (conn) return;
+
     // find the in/out nodes
     var inNode = _.find(nodes, {'asNEATNode': connection.inNode}),
         outNode = _.find(nodes, {'asNEATNode': connection.outNode});
@@ -43,6 +51,8 @@ Visualization.prototype.getVisualizationNetwork = function() {
     }));
   });
 
+  // TODO: Refresh x,y positions?
+
   return {
     nodes: nodes,
     connections: connections
@@ -50,14 +60,8 @@ Visualization.prototype.getVisualizationNetwork = function() {
 };
 
 Visualization.prototype.refresh = function() {
-  var visNetwork = this.getVisualizationNetwork();
-
-  var dNodes = this.svg
-    .select('.nodes')
-    .selectAll('.node')
-    .data(visNetwork.nodes);
-  
-  var width = this.width,
+  var visNetwork = this.getVisualizationNetwork(),
+      width = this.width,
       height = this.height,
       padding = this.padding,
       animateSpeed = this.animateSpeed;
@@ -68,23 +72,6 @@ Visualization.prototype.refresh = function() {
   function getY(e,i) {
     return e.depthY*(height-2*padding) + padding;
   }
-
-  dNodes.transition()
-    .duration(animateSpeed)
-    .attr('cx', getX)
-    .attr('cy', getY);
-
-  dNodes.enter().append('circle')
-    .attr('class', 'node')
-    .attr('cx', getX)
-    .attr('cy', getY)
-    .attr('r', 0)
-    .attr('stroke', 'black')
-    .attr('stroke-width', 2)
-    .attr('fill', 'red')
-    .transition()
-      .duration(animateSpeed)
-      .attr('r', 10);
 
   var diff = 200;
   function getInitialD(e,i) {
@@ -116,12 +103,37 @@ Visualization.prototype.refresh = function() {
     return getY(e.outVNode);
   }
 
-  // Render edges
-  var vConnections = this.svg.select('.connections').selectAll('.connection')
+  var dNodes = this.svg
+    .select('.nodes')
+    .selectAll('.node')
+    .data(visNetwork.nodes);
+
+  dNodes.transition()
+    .duration(animateSpeed)
+    .attr('cx', getX)
+    .attr('cy', getY);
+
+  dNodes.enter().append('circle')
+    .attr('class', 'node')
+    .attr('cx', getX)
+    .attr('cy', getY)
+    .attr('r', 0)
+    .attr('stroke', 'black')
+    .attr('stroke-width', 2)
+    .attr('fill', 'red')
+    .transition()
+      .duration(animateSpeed)
+      .attr('r', 10);
+
+  // Render connections
+  var vConnections = this.svg
+      .select('.connections')
+      .selectAll('.connection')
       .data(visNetwork.connections);
   vConnections.transition()
     .duration(animateSpeed)
     .attr('d', getD);
+
   vConnections.enter().append('path')
     .attr('class', 'edge')
     .attr('d', getInitialD)
@@ -131,6 +143,7 @@ Visualization.prototype.refresh = function() {
     .transition()
       .duration(animateSpeed)
       .attr('d', getD);
+  vConnections.exit().remove();
 };
 
 var VNode = function(parameters) {

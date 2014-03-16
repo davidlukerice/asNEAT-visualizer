@@ -1,0 +1,32 @@
+{
+  "name": "asNEAT-visualizer",
+  "version": "0.0.0",
+  "homepage": "https://github.com/davidlukerice/asNEAT-visualizer",
+  "authors": [
+    "David Rice <davidlukerice@gmail.com>"
+  ],
+  "description": "A set of visualizations for an asNEAT network",
+  "main": "./src/asNEAT.js",
+  "keywords": [
+    "asNEAT-visualizer",
+    "asNEAT",
+    "visualizer",
+    "Web",
+    "Audio",
+    "Genetic",
+    "Programming",
+    "Evolution"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "vendor",
+    "test",
+    "tests",
+    "src"
+  ],
+  "dependencies": [
+  ]
+}

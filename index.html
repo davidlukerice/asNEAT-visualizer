@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>asNEAT Demo</title>
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="./dist/asNEAT.js"></script>
+  </head>
+  <body>
+    
+    <h2>Controls</h2>
+    <button class='play'>play</button>
+    <button class="randomMutate">Random Mutate</button>
+    <button class="splitMutate">split Mutate</button>
+    <button class="addOscillator" disabled="">add Oscillator</button>
+    <button class="addConnection">Add Connection</button>
+    <button class="mutateWeight">Mutate Weights</button>
+    <button class="mutateNodeParameters">Mutate Node parameter</button>
+
+    <br>
+    <br>
+    <h2>Current Instrument</h2>
+    <div class="currentNetwork">
+    </div>
+
+    <br>
+    <br>
+    <h2>Log</h2>
+    <div class="log">
+    </div>
+
+    <script type="text/javascript">
+      !function() {
+        $(function() {
+          var ns = asNEAT,
+              log = ns.Utils.log,
+              network = new ns.Network();
+
+          updateDisplay();
+
+          $('button.play').click(function() {
+            network.play();
+          });
+          $('button.splitMutate').click(function() {
+            network.splitMutation();
+            updateDisplay();
+          });
+
+          $('button.randomMutate').click(function() {
+            network.mutate();
+            updateDisplay();
+          });
+          $('button.addOscillator').click(function() {
+            network.addOscillator();
+            updateDisplay();
+          });
+          $('button.addConnection').click(function() {
+            log('todo: add Connection');
+          });
+          $('button.mutateWeight').click(function() {
+            network.mutateConnectionWeights();
+            updateDisplay();
+          });
+          $('button.mutateNodeParameters').click(function() {
+            network.mutateNodeParameters();
+            updateDisplay();
+          });
+
+          function updateDisplay() {
+            $('.currentNetwork').html(network.toString());
+          }
+        });
+      }();
+    </script>
+
+  </body>
+</html>

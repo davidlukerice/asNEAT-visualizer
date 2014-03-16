@@ -1,0 +1,9 @@
+Current:
+
+
+Planned:
+- graph view
+- frequency view
+- spectrogram view
+- 3d spectrogram view
+- waveworm view

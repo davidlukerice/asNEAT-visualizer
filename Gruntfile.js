@@ -15,9 +15,7 @@ module.exports = function(grunt) {
       }
     },
 
-    clean: {
-      build: ['tmp']
-    },
+    clean: ['tmp'],
 
     copy: {
       main: {
@@ -34,7 +32,7 @@ module.exports = function(grunt) {
       main: {
         type: 'amd',
         moduleName: function(path) {
-          return grunt.config.process('<%= pkg.name %>/') + path;
+          return grunt.config.process('<%= pkg.moduleName %>/') + path;
         },
         files: [{
           expand: true,
@@ -66,9 +64,6 @@ module.exports = function(grunt) {
       }
     },
 
-
-
-
     qunit: {
       files: ['test/**/*.html']
     },
@@ -78,9 +73,9 @@ module.exports = function(grunt) {
         files: ['<%= jshint.files %>'],
         tasks: ['jshint', 'qunit']        
       },
-      dist: {
+      build: {
         files: ['src/**/*.js'],
-        tasks: ['concat', 'qunit', 'uglify']
+        tasks: ['clean', 'copy', 'transpile', 'concat', 'uglify']
       }
     },
     concurrent: {
@@ -88,7 +83,7 @@ module.exports = function(grunt) {
         logConcurrentOutput: true
       },
       watches: {
-        tasks: ["watch:lint", "watch:dist"]
+        tasks: ["watch:lint", "watch:build"]
       }
     }
   });
@@ -104,20 +99,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-concurrent');
   grunt.loadNpmTasks('grunt-es6-module-transpiler');
 
-  // task(s).
-  //grunt.registerTask('test', ['jshint', 'qunit']);
-  //grunt.registerTask('dist', ['jshint', 'concat', 'qunit', 'uglify']);
-  //grunt.registerTask('watchLint', ['watch:lint']);
-  //grunt.registerTask('watchDist', ['test', 'dist', 'concurrent:watches']);
-  //grunt.registerTask('default', ['watchDist']);
-
-  grunt.registerTask('build', [
-    'jshint',
-    'qunit',
-    'clean:build',
-    'copy',
-    'transpile',
-    'concat',
-    'uglify'
-  ]);
+  // tasks
+  grunt.registerTask('test', ['jshint', 'qunit']);
+  grunt.registerTask('build', ['clean', 'copy', 'transpile', 'concat', 'uglify']);
+  grunt.registerTask('watchBuild', ['test', 'build', 'concurrent:watches']);
+  grunt.registerTask('default', ['watchBuild']);
 };

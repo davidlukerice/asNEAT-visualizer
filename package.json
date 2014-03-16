@@ -1,5 +1,6 @@
 {
   "name": "asNEAT-visualizer",
+  "moduleName": "asNEAT",
   "version": "0.1.0",
   "description": "A set of visualizations for an asNEAT network",
   "main": "./dist/asNEAT-visualizer.js",
@@ -11,8 +12,13 @@
     "url": "https://github.com/davidlukerice/asNEAT.git"
   },
   "keywords": [
+    "asNEAT-visualizer",
+    "asNEAT",
+    "visualizer",
+    "Genetic",
+    "Programming",
     "NEAT",
-    "Evolution",
+    "webaudio",
     "Web",
     "Audio",
     "API"

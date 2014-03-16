@@ -11,11 +11,13 @@
     "asNEAT-visualizer",
     "asNEAT",
     "visualizer",
-    "Web",
-    "Audio",
     "Genetic",
     "Programming",
-    "Evolution"
+    "NEAT",
+    "webaudio",
+    "Web",
+    "Audio",
+    "API"
   ],
   "license": "MIT",
   "ignore": [

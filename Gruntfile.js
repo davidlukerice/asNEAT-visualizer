@@ -1,5 +1,7 @@
 module.exports = function(grunt) {
 
+  var banner = '/* <%= pkg.name %> <%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n';
+
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -45,6 +47,7 @@ module.exports = function(grunt) {
 
     concat: {
       options: {
+        banner: banner,
         separator: ';'
       },
       dist: {
@@ -55,7 +58,7 @@ module.exports = function(grunt) {
 
     uglify: {
       options: {
-        banner: '/*! <%= pkg.name %> <%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+        banner: banner
       },
       dist: {
         files: {

@@ -1,7 +1,4 @@
 
-(function(global) {
-  "use strict";
+var Visualizer = {};
 
-  var ns = (global.asNEAT = global.asNEAT || {});
-
-})(this);
+export default Visualizer;

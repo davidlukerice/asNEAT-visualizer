@@ -11,11 +11,7 @@ module.exports = function(grunt) {
         '!src/vendor/*.js',
         'test/test/*.js'],
       options: {
-        globals: {
-          jQuery: true,
-          console: true,
-          module: true
-        }
+        jshintrc: '.jshintrc'
       }
     },
 

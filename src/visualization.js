@@ -29,13 +29,18 @@ Visualization.prototype.getVisualizationNetwork = function() {
       connections = [];
 
   _.forEach(this.network.nodes, function(node) {
-    nodes.push(Node.createVNodeFrom(node));
+    nodes.push(VNode.createVNodeFrom(node));
   });
 
   _.forEach(this.network.connections, function(connection) {
-    var vConn = Connection.createVConnectionFrom(connection);
-    connections.push(vConn);
-    // TODO: Handle new nodes?
+    // find the in/out nodes
+    var inNode = _.find(nodes, {'asNEATNode': connection.inNode}),
+        outNode = _.find(nodes, {'asNEATNode': connection.outNode});
+    connections.push(new VConnection({
+      inVNode: inNode,
+      outVNode: outNode,
+      asNEATConnection: connection
+    }));
   });
 
   return {
@@ -99,16 +104,16 @@ Visualization.prototype.refresh = function() {
            ' '+x2+','+y2;
   }
   function getX1(e) {
-    return getX(e.inNode);
+    return getX(e.inVNode);
   }
   function getY1(e) {
-    return getY(e.inNode);
+    return getY(e.inVNode);
   }
   function getX2(e) {
-    return getX(e.outNode);
+    return getX(e.outVNode);
   }
   function getY2(e) {
-    return getY(e.outNode);
+    return getY(e.outVNode);
   }
 
   // Render edges
@@ -128,34 +133,29 @@ Visualization.prototype.refresh = function() {
       .attr('d', getD);
 };
 
-var Node = function(parameters) {
+var VNode = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
 };
-Node.prototype.defaultParameters = {
+VNode.prototype.defaultParameters = {
   depthX: 0,
-  depthY: 0
+  depthY: 0,
+  asNEATNode: null
 };
-Node.createVNodeFrom = function(asNEATNode) {
-  return new Node({
+VNode.createVNodeFrom = function(asNEATNode) {
+  return new VNode({
     depthX: Math.random(),
-    depthY: Math.random()
+    depthY: Math.random(),
+    asNEATNode: asNEATNode
   });
 };
 
-var Connection = function(parameters) {
+var VConnection = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
 };
-Connection.prototype.defaultParameters = {
-  weight: 1,
-  inNode: null,
-  outNode: null
-};
-Connection.createVConnectionFrom = function(asNEATConnection) {
-  return new Connection({
-    weight: Math.random(),
-    inNode: Node.createVNodeFrom(asNEATConnection.inNode),
-    outNode: Node.createVNodeFrom(asNEATConnection.outNode)
-  });
+VConnection.prototype.defaultParameters = {
+  inVNode: null,
+  outVNode: null,
+  asNEATConnection: null
 };
 
 export default Visualization;

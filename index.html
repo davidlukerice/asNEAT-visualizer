@@ -2,8 +2,11 @@
 <html>
   <head>
     <title>asNEAT-visualizer Demo</title>
-    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="./dist/asNEAT.js"></script>
+    <script src="./vendor/jquery/dist/jquery.js"></script>
+    <script src="./vendor/asNEAT/dist/asNEAT.js"></script>
+    <script src="./vendor/d3/d3.min.js"></script>
+    <script src="./vendor/loader.js"></script>
+    <script src="./dist/asNEAT-visualizer.js"></script>
   </head>
   <body>
     
@@ -18,7 +21,7 @@
 
     <br>
     <br>
-    <h2>Current Instrument</h2>
+    <h2>Visualization</h2>
     <div class="currentNetwork">
     </div>
 
@@ -33,42 +36,51 @@
         $(function() {
           var ns = asNEAT,
               log = ns.Utils.log,
-              network = new ns.Network();
+              network = new ns.Network(),
+              Visualizer = require('asNEAT/asNEAT-visualizer')['default'];
+          
+          var visualization = Visualizer.createVisualization({
+            network: network
+          });
 
-          updateDisplay();
+          updateVisualization();
+          
+        });
 
+        function setupHandler() {
           $('button.play').click(function() {
             network.play();
           });
           $('button.splitMutate').click(function() {
             network.splitMutation();
-            updateDisplay();
+            updateVisualization();
           });
 
           $('button.randomMutate').click(function() {
             network.mutate();
-            updateDisplay();
+            updateVisualization();
           });
           $('button.addOscillator').click(function() {
             network.addOscillator();
-            updateDisplay();
+            updateVisualization();
           });
           $('button.addConnection').click(function() {
             log('todo: add Connection');
           });
           $('button.mutateWeight').click(function() {
             network.mutateConnectionWeights();
-            updateDisplay();
+            updateVisualization();
           });
           $('button.mutateNodeParameters').click(function() {
             network.mutateNodeParameters();
-            updateDisplay();
+            updateVisualization();
           });
+        }
 
-          function updateDisplay() {
-            $('.currentNetwork').html(network.toString());
+        function updateVisualization() {
+            // todo: update visualization?
+            //$('.currentNetwork').html(network.toString());
           }
-        });
       }();
     </script>
 

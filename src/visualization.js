@@ -113,7 +113,7 @@ Visualization.prototype.refresh = function() {
     if (e.asNEATConnection.enabled)
       return 'black';
     else
-      return 'lightgray';
+      return 'gray';
   }
 
   function getConnectionId(e) {
@@ -151,10 +151,11 @@ Visualization.prototype.refresh = function() {
 
   dConnections.transition()
     .duration(animateSpeed)
-    .attr('d', getD);
+    .attr('d', getD)
+    .style('stroke', getConnectionColor);
 
   dConnections.enter().append('path')
-    .attr('class', 'edge')
+    .attr('class', 'connection')
     .attr('d', getInitialD)
     .attr('fill', 'none')
     .style('stroke', getConnectionColor)
@@ -162,7 +163,6 @@ Visualization.prototype.refresh = function() {
     .transition()
       .duration(animateSpeed)
       .attr('d', getD);
-  dConnections.exit().remove();
 };
 
 var VNode = function(parameters) {

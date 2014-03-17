@@ -1,6 +1,5 @@
 Current:
 - d3 network visualization
-  - fix duplicating connections on refresh
 
 Planned:
 - concat_sourcemap

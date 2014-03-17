@@ -30,7 +30,7 @@
   ],
   "dependencies": {
     "jquery": "~1.11.0",
-    "asNEAT": "~0.3.0",
+    "asNEAT": "git://github.com/davidlukerice/asNEAT.git#master",
     "d3": "~3.4.3",
     "lodash": "~2.4.1"
   }

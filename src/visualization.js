@@ -18,7 +18,7 @@ Visualization.prototype.defaultParameters = {
   network: null,
   width: 800,
   height: 600,
-  padding: 0,
+  padding: 20,
   selector: '.network',
   animateSpeed: 750
 };
@@ -26,7 +26,7 @@ Visualization.prototype.defaultParameters = {
 /*
   creates a representation of each node/connection in the network to be shown
  **/
-Visualization.prototype.getVisualizationNetwork = function() {
+Visualization.prototype.updateVisualizationNetwork = function() {
   
   var nodes = this.vNodes,
       connections = this.vConnections;
@@ -52,19 +52,17 @@ Visualization.prototype.getVisualizationNetwork = function() {
   });
 
   // TODO: Refresh x,y positions?
-
-  return {
-    nodes: nodes,
-    connections: connections
-  };
 };
 
 Visualization.prototype.refresh = function() {
-  var visNetwork = this.getVisualizationNetwork(),
+  var vNodes = this.vNodes,
+      vConnections = this.vConnections,
       width = this.width,
       height = this.height,
       padding = this.padding,
       animateSpeed = this.animateSpeed;
+
+  this.updateVisualizationNetwork();
 
   function getX(e,i) {
     return e.depthX*(width-2*padding)+padding;
@@ -103,15 +101,35 @@ Visualization.prototype.refresh = function() {
     return getY(e.outVNode);
   }
 
+  function getNodeColor(e) {
+    if (e.asNEATNode instanceof asNEAT.OscillatorNode)
+      return "green";
+    if (e.asNEATNode instanceof asNEAT.OutNode)
+      return "black";
+    return "red";
+  }
+
+  function getConnectionColor(e) {
+    if (e.asNEATConnection.enabled)
+      return 'black';
+    else
+      return 'lightgray';
+  }
+
+  function getConnectionId(e) {
+    return e.asNEATConnection.id;
+  }
+
   var dNodes = this.svg
     .select('.nodes')
     .selectAll('.node')
-    .data(visNetwork.nodes);
+    .data(vNodes);
 
   dNodes.transition()
     .duration(animateSpeed)
     .attr('cx', getX)
-    .attr('cy', getY);
+    .attr('cy', getY)
+    .attr('r', 10);
 
   dNodes.enter().append('circle')
     .attr('class', 'node')
@@ -120,30 +138,31 @@ Visualization.prototype.refresh = function() {
     .attr('r', 0)
     .attr('stroke', 'black')
     .attr('stroke-width', 2)
-    .attr('fill', 'red')
+    .attr('fill', getNodeColor)
     .transition()
       .duration(animateSpeed)
       .attr('r', 10);
 
   // Render connections
-  var vConnections = this.svg
+  var dConnections = this.svg
       .select('.connections')
       .selectAll('.connection')
-      .data(visNetwork.connections);
-  vConnections.transition()
+      .data(vConnections, getConnectionId);
+
+  dConnections.transition()
     .duration(animateSpeed)
     .attr('d', getD);
 
-  vConnections.enter().append('path')
+  dConnections.enter().append('path')
     .attr('class', 'edge')
     .attr('d', getInitialD)
     .attr('fill', 'none')
-    .style('stroke', 'black')
+    .style('stroke', getConnectionColor)
     .style('stroke-width', 2)
     .transition()
       .duration(animateSpeed)
       .attr('d', getD);
-  vConnections.exit().remove();
+  dConnections.exit().remove();
 };
 
 var VNode = function(parameters) {

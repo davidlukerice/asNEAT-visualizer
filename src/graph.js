@@ -100,7 +100,7 @@ Path.prototype.duplicateFromNode = function(vNode) {
   });
 
   var newPath = new Path();
-  newPath.nodes = this.nodes.slice(0, index);
+  newPath.nodes = this.nodes.slice(0, index+1);
   return newPath;
 };
 

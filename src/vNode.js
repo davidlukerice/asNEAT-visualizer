@@ -14,19 +14,21 @@ VNode.prototype.cleanParameters = function() {
   this.yIndex = 0;
   this.hashElement = null;
 };
+VNode.prototype.getLongestPathLength = function() {
+  return this.longestPath ? this.longestPath.getLength() : 1;
+};
+VNode.prototype.getNumberNodesInHash = function() {
+  return this.hashElement ? this.hashElement.value : 1;
+};
 VNode.prototype.getLocalX = function() {
-  var longestPathLength = this.longestPath ?
-        this.longestPath.getLength() : 1;
-  return (1-this.numHops/longestPathLength);
+  return (1-this.numHops/this.getLongestPathLength());
 };
 VNode.prototype.getLocalY = function() {
-  var hashNum = this.hashElement ?
-        this.hashElement.value : 1;
-  return (this.yIndex+1)/(hashNum+1);
+  return (this.yIndex+1)/(this.getNumberNodesInHash()+1);
 };
-VNode.prototype.getPosString = function() {
-  var longestPathLength = this.longestPath ? this.longestPath.getLength() : 1;
-  return this.numHops+"/"+longestPathLength;
+VNode.prototype.getLabel = function() {
+  return '('+this.numHops+"/"+this.getLongestPathLength()+
+        ', '+this.yIndex+'/'+this.getNumberNodesInHash()+')';
 };
 
 var inc = 0;

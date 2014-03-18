@@ -182,7 +182,7 @@ Visualization.prototype.refresh = function() {
     .attr('x', getX)
     .attr('y', getY)
     .style('fill', 'red')
-    .text(function(e){return e.getPosString();});
+    .text(function(e){return e.getLabel();});
 
 };
 

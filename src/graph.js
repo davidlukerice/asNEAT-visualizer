@@ -4,11 +4,10 @@ var Graph = function(parameters) {};
 Graph.longestPath = function(vNodes, vConns) {
   var log = asNEAT.Utils.log;
 
-  // todo: really need this if nodes are refreshed already?
   // Clear any data from the last longest path search
-  //_.forEach(vNodes, function(vNode) {
-  //  vNode.cleanParameters();
-  //});
+  _.forEach(vNodes, function(vNode) {
+    vNode.cleanParameters();
+  });
 
   // Start at the output node
   var outNode = _.find(vNodes, function(e) {
@@ -23,7 +22,7 @@ Graph.longestPath = function(vNodes, vConns) {
   var paths = [];
   var firstPath = new Path(outNode);
   outNode.longestPath = firstPath;
-  outNode.numHops = firstPath.getLength()-1;
+  outNode.numHops = firstPath.getLength();
   paths.push(firstPath);
 
   // traverse backwards along "enabled" connections and mark #hops on longest route
@@ -45,7 +44,7 @@ Graph.longestPath = function(vNodes, vConns) {
         path = path.duplicateFromNode(outNode);
 
       path.pushNode(inVNode);
-      inVNode.numHops = path.getLength()-1;
+      inVNode.numHops = path.getLength();
       inVNode.longestPath = path;
     }
 
@@ -86,8 +85,11 @@ Path.prototype.pushNode = function(vNode) {
 Path.prototype.inPath = function(vNode) {
   return !!_.find(this.nodes, {'asNEATNode': vNode.asNEATNode});
 };
+/*
+  @return the number of connections in the path
+*/
 Path.prototype.getLength = function() {
-  return this.nodes.length;
+  return this.nodes.length-1;
 };
 Path.prototype.isLastNode = function(vNode) {
   return this.nodes[this.nodes.length-1]===vNode;

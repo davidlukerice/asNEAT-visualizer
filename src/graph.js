@@ -1,8 +1,11 @@
 
+var OutNode = require('asNEAT/nodes/outNode')['default'],
+    log = require('asNEAT/utils')['default'].log;
+
+
 var Graph = function(parameters) {};
 
 Graph.longestPath = function(vNodes, vConns) {
-  var log = asNEAT.Utils.log;
 
   // Clear any data from the last longest path search
   _.forEach(vNodes, function(vNode) {
@@ -11,7 +14,7 @@ Graph.longestPath = function(vNodes, vConns) {
 
   // Start at the output node
   var outNode = _.find(vNodes, function(e) {
-    return e.asNEATNode instanceof asNEAT.OutNode;
+    return e.asNEATNode instanceof OutNode;
   });
   
   log('found outNode: '+ outNode.asNEATNode.toString());

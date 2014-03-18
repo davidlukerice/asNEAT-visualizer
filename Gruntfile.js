@@ -50,7 +50,7 @@ module.exports = function(grunt) {
         banner: banner
       },
       dist: {
-        src: ['src/vendor/*.js', 'tmp/transpiled/*.js'],
+        src: ['tmp/transpiled/**/*.js'],
         dest: 'dist/<%= pkg.name %>.js'
       }
     },

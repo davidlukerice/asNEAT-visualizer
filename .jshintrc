@@ -7,7 +7,6 @@
     "$": true,
     "_": true,
     "d3": true,
-    "asNEAT": true,
     "require": true
   },
   "node" : false,

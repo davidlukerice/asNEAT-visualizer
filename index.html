@@ -10,9 +10,11 @@
     </style>
 
     <script src="./vendor/jquery/dist/jquery.js"></script>
-    <script src="./vendor/asNEAT/dist/asNEAT.js"></script>
     <script src="./vendor/d3/d3.min.js"></script>
+    <script src="./vendor/lodash/dist/lodash.min.js"></script>
+
     <script src="./vendor/loader.js"></script>
+    <script src="./vendor/asNEAT/dist/asNEAT.js"></script>
     <script src="./dist/asNEAT-visualizer.js"></script>
   </head>
   <body>
@@ -48,10 +50,11 @@
             visualization;
 
         $(function() {
-          var ns = asNEAT,
-              log = ns.Utils.log,
+          var Utils = require('asNEAT/utils')['default'],
+              log = Utils.log,
+              Network = require('asNEAT/network')['default'],
               Visualizer = require('asNEAT/asNEAT-visualizer')['default'];
-          network = new ns.Network();
+          network = new Network();
 
           visualization = Visualizer.createVisualization({
             network: network

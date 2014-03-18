@@ -47,8 +47,7 @@ module.exports = function(grunt) {
 
     concat: {
       options: {
-        banner: banner,
-        separator: ';'
+        banner: banner
       },
       dist: {
         src: ['src/vendor/*.js', 'tmp/transpiled/*.js'],

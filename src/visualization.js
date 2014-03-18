@@ -23,7 +23,7 @@ Visualization.prototype.defaultParameters = {
   network: null,
   width: 800,
   height: 600,
-  padding: 20,
+  padding: 60,
   selector: '.network',
   animateSpeed: 750
 };
@@ -181,6 +181,7 @@ Visualization.prototype.refresh = function() {
     .attr('class', 'label')
     .attr('x', getX)
     .attr('y', getY)
+    .style('fill', 'red')
     .text(function(e){return e.getPosString();});
 
 };

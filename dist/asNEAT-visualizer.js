@@ -1,4 +1,4 @@
-/* asNEAT-visualizer 0.1.0 2014-03-16 */
+/* asNEAT-visualizer 0.0.3 2014-03-17 */
 define("asNEAT/asNEAT-visualizer", 
   ["asNEAT/visualization","exports"],
   function(__dependency1__, __exports__) {
@@ -17,10 +17,192 @@ define("asNEAT/asNEAT-visualizer",
     };
     
     __exports__["default"] = Visualizer;
-  });;define("asNEAT/visualization", 
+  });
+define("asNEAT/graph", 
   ["exports"],
   function(__exports__) {
     "use strict";
+    
+    var OutNode = require('asNEAT/nodes/outNode')['default'],
+        log = require('asNEAT/utils')['default'].log;
+    
+    
+    var Graph = function(parameters) {};
+    
+    Graph.longestPath = function(vNodes, vConns) {
+    
+      // Clear any data from the last longest path search
+      _.forEach(vNodes, function(vNode) {
+        vNode.cleanParameters();
+      });
+    
+      // Start at the output node
+      var outNode = _.find(vNodes, function(e) {
+        return e.asNEATNode instanceof OutNode;
+      });
+      
+      log('found outNode: '+ outNode.asNEATNode.toString());
+    
+      var stack = [];
+      stack = _.union(stack, Graph.getConnectionsGoingTo(outNode, vConns));
+    
+      var paths = [];
+      var firstPath = new Path(outNode);
+      outNode.longestPath = firstPath;
+      outNode.numHops = firstPath.getLength();
+      paths.push(firstPath);
+    
+      // traverse backwards along "enabled" connections and mark #hops on longest route
+      while (stack.length) {
+        var conn = stack.pop();
+    
+        var inVNode = conn.inVNode;
+        var outVNode = conn.outVNode;
+    
+        if (inVNode.longestPath) {
+          log('todo collision');
+        }
+        else {
+          var path = outVNode.longestPath;
+          
+          // check outNode is the last node in path
+          // if not, duplicate path from outNode
+          if (!path.isLastNode(outVNode))
+            path = path.duplicateFromNode(outNode);
+    
+          path.pushNode(inVNode);
+          inVNode.numHops = path.getLength();
+          inVNode.longestPath = path;
+        }
+    
+        // push on next connections
+        stack = _.union(stack, Graph.getConnectionsGoingTo(inVNode, vConns));
+      }
+    
+      // foreach node increment # in hash w/ key of x & assign (h[x]-1) as YIndex;
+      var hash = {};
+      _.forEach(vNodes, function(vNode) {
+        var key = vNode.getLocalX(),
+            entry = hash[key];
+        if (!entry) {
+          entry = { value: 0 };
+          hash[key] = entry;
+        }
+    
+        vNode.hashElement = entry;
+        vNode.yIndex = entry.value++;
+      });
+    };
+    
+    Graph.getConnectionsGoingTo = function(vNode, vConnections) {
+      return _.filter(vConnections, function(e) {
+        return e.asNEATConnection.enabled && e.outVNode === vNode;
+      });
+    };
+    
+    
+    var Path = function(vNode) {
+      this.nodes = [];
+      if (vNode)
+        this.pushNode(vNode);
+    };
+    Path.prototype.pushNode = function(vNode) {
+      this.nodes.push(vNode);
+    };
+    Path.prototype.inPath = function(vNode) {
+      return !!_.find(this.nodes, {'asNEATNode': vNode.asNEATNode});
+    };
+    /*
+      @return the number of connections in the path
+    */
+    Path.prototype.getLength = function() {
+      return this.nodes.length-1;
+    };
+    Path.prototype.isLastNode = function(vNode) {
+      return this.nodes[this.nodes.length-1]===vNode;
+    };
+    Path.prototype.duplicateFromNode = function(vNode) {
+      var index = _.findIndex(this.nodes, function(node) {
+        return node.asNEATNode === vNode.asNEATNode;
+      });
+    
+      var newPath = new Path();
+      newPath.nodes = this.nodes.slice(0, index+1);
+      return newPath;
+    };
+    
+    __exports__["default"] = Graph;
+  });
+define("asNEAT/vConnection", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var VConnection = function(parameters) {
+      _.defaults(this, parameters, this.defaultParameters);
+    };
+    VConnection.prototype.defaultParameters = {
+      inVNode: null,
+      outVNode: null,
+      asNEATConnection: null
+    };
+    
+    __exports__["default"] = VConnection;
+  });
+define("asNEAT/vNode", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var VNode = function(parameters) {
+      _.defaults(this, parameters, this.defaultParameters);
+    };
+    VNode.prototype.defaultParameters = {
+      numHops: 0,
+      longestPath: null,
+      yIndex: 0,
+      hashElement: null,
+      asNEATNode: null
+    };
+    VNode.prototype.cleanParameters = function() {
+      this.numHops = 0;
+      this.longestPath = null;
+      this.yIndex = 0;
+      this.hashElement = null;
+    };
+    VNode.prototype.getLongestPathLength = function() {
+      return this.longestPath ? this.longestPath.getLength() : 1;
+    };
+    VNode.prototype.getNumberNodesInHash = function() {
+      return this.hashElement ? this.hashElement.value : 1;
+    };
+    VNode.prototype.getLocalX = function() {
+      return (1-this.numHops/this.getLongestPathLength());
+    };
+    VNode.prototype.getLocalY = function() {
+      return (this.yIndex+1)/(this.getNumberNodesInHash()+1);
+    };
+    VNode.prototype.getLabel = function() {
+      return '('+this.numHops+"/"+this.getLongestPathLength()+
+            ', '+this.yIndex+'/'+this.getNumberNodesInHash()+')';
+    };
+    
+    VNode.createVNodeFrom = function(asNEATNode) {
+      return new VNode({
+        asNEATNode: asNEATNode
+      });
+    };
+    
+    __exports__["default"] = VNode;
+  });
+define("asNEAT/visualization", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    
+    var OscillatorNode = require('asNEAT/nodes/oscillatorNode')['default'],
+        OutNode = require('asNEAT/nodes/outNode')['default'],
+        VNode = require('asNEAT/vNode')['default'],
+        VConnection = require('asNEAT/vConnection')['default'],
+        Graph = require('asNEAT/graph')['default'];
     
     var Visualization = function(parameters) {
       _.defaults(this, parameters, this.defaultParameters);
@@ -30,6 +212,7 @@ define("asNEAT/asNEAT-visualizer",
         .attr('height', this.height);
       svg.append('g').attr('class', 'connections');
       svg.append('g').attr('class', 'nodes');
+      svg.append('g').attr('class', 'labels');
       this.svg = svg;
     
       this.vNodes = [];
@@ -41,7 +224,7 @@ define("asNEAT/asNEAT-visualizer",
       network: null,
       width: 800,
       height: 600,
-      padding: 20,
+      padding: 60,
       selector: '.network',
       animateSpeed: 750
     };
@@ -74,7 +257,7 @@ define("asNEAT/asNEAT-visualizer",
         }));
       });
     
-      // TODO: Refresh x,y positions?
+      Graph.longestPath(nodes, connections);
     };
     
     Visualization.prototype.refresh = function() {
@@ -88,10 +271,10 @@ define("asNEAT/asNEAT-visualizer",
       this.updateVisualizationNetwork();
     
       function getX(e,i) {
-        return e.depthX*(width-2*padding)+padding;
+        return e.getLocalX()*(width-2*padding) + padding;
       }
       function getY(e,i) {
-        return e.depthY*(height-2*padding) + padding;
+        return e.getLocalY()*(height-2*padding) + padding;
       }
     
       var diff = 200;
@@ -125,9 +308,9 @@ define("asNEAT/asNEAT-visualizer",
       }
     
       function getNodeColor(e) {
-        if (e.asNEATNode instanceof asNEAT.OscillatorNode)
+        if (e.asNEATNode instanceof OscillatorNode)
           return "green";
-        if (e.asNEATNode instanceof asNEAT.OutNode)
+        if (e.asNEATNode instanceof OutNode)
           return "black";
         return "red";
       }
@@ -186,31 +369,23 @@ define("asNEAT/asNEAT-visualizer",
         .transition()
           .duration(animateSpeed)
           .attr('d', getD);
-    };
     
-    var VNode = function(parameters) {
-      _.defaults(this, parameters, this.defaultParameters);
-    };
-    VNode.prototype.defaultParameters = {
-      depthX: 0,
-      depthY: 0,
-      asNEATNode: null
-    };
-    VNode.createVNodeFrom = function(asNEATNode) {
-      return new VNode({
-        depthX: Math.random(),
-        depthY: Math.random(),
-        asNEATNode: asNEATNode
-      });
-    };
+      var dInfo = this.svg
+          .select('.labels')
+          .selectAll('.label')
+          .data(vNodes);
+      dInfo.transition()
+        .duration(animateSpeed)
+        .attr('x', getX)
+        .attr('y', getY)
+        .text(function(e){return e.getLabel();});
+      dInfo.enter().append('text')
+        .attr('class', 'label')
+        .attr('x', getX)
+        .attr('y', getY)
+        .style('fill', 'red')
+        .text(function(e){return e.getLabel();});
     
-    var VConnection = function(parameters) {
-      _.defaults(this, parameters, this.defaultParameters);
-    };
-    VConnection.prototype.defaultParameters = {
-      inVNode: null,
-      outVNode: null,
-      asNEATConnection: null
     };
     
     __exports__["default"] = Visualization;

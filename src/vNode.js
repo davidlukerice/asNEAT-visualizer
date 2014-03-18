@@ -31,16 +31,9 @@ VNode.prototype.getLabel = function() {
         ', '+this.yIndex+'/'+this.getNumberNodesInHash()+')';
 };
 
-var inc = 0;
 VNode.createVNodeFrom = function(asNEATNode) {
   return new VNode({
-    asNEATNode: asNEATNode//,
-    
-    // todo remove defaults after longestPath is working
-    //numHops: inc++,
-    //longestPath: {length: 4, path:[]},
-    //yIndex: 0,
-    //hashElement: {value: 1}
+    asNEATNode: asNEATNode
   });
 };
 

@@ -176,7 +176,8 @@ Visualization.prototype.refresh = function() {
   dInfo.transition()
     .duration(animateSpeed)
     .attr('x', getX)
-    .attr('y', getY);
+    .attr('y', getY)
+    .text(function(e){return e.getLabel();});
   dInfo.enter().append('text')
     .attr('class', 'label')
     .attr('x', getX)

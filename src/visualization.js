@@ -1,4 +1,8 @@
 
+var VNode = require('asNEAT/vNode')['default'],
+    VConnection = require('asNEAT/vConnection')['default'],
+    Graph = require('asNEAT/graph')['default'];
+
 var Visualization = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
 
@@ -7,6 +11,7 @@ var Visualization = function(parameters) {
     .attr('height', this.height);
   svg.append('g').attr('class', 'connections');
   svg.append('g').attr('class', 'nodes');
+  svg.append('g').attr('class', 'labels');
   this.svg = svg;
 
   this.vNodes = [];
@@ -51,7 +56,7 @@ Visualization.prototype.updateVisualizationNetwork = function() {
     }));
   });
 
-  // TODO: Refresh x,y positions?
+  Graph.longestPath(nodes, connections);
 };
 
 Visualization.prototype.refresh = function() {
@@ -65,10 +70,10 @@ Visualization.prototype.refresh = function() {
   this.updateVisualizationNetwork();
 
   function getX(e,i) {
-    return e.depthX*(width-2*padding)+padding;
+    return e.getLocalX()*(width-2*padding) + padding;
   }
   function getY(e,i) {
-    return e.depthY*(height-2*padding) + padding;
+    return e.getLocalY()*(height-2*padding) + padding;
   }
 
   var diff = 200;
@@ -163,31 +168,21 @@ Visualization.prototype.refresh = function() {
     .transition()
       .duration(animateSpeed)
       .attr('d', getD);
-};
 
-var VNode = function(parameters) {
-  _.defaults(this, parameters, this.defaultParameters);
-};
-VNode.prototype.defaultParameters = {
-  depthX: 0,
-  depthY: 0,
-  asNEATNode: null
-};
-VNode.createVNodeFrom = function(asNEATNode) {
-  return new VNode({
-    depthX: Math.random(),
-    depthY: Math.random(),
-    asNEATNode: asNEATNode
-  });
-};
+  var dInfo = this.svg
+      .select('.labels')
+      .selectAll('.label')
+      .data(vNodes);
+  dInfo.transition()
+    .duration(animateSpeed)
+    .attr('x', getX)
+    .attr('y', getY);
+  dInfo.enter().append('text')
+    .attr('class', 'label')
+    .attr('x', getX)
+    .attr('y', getY)
+    .text(function(e){return e.getPosString();});
 
-var VConnection = function(parameters) {
-  _.defaults(this, parameters, this.defaultParameters);
-};
-VConnection.prototype.defaultParameters = {
-  inVNode: null,
-  outVNode: null,
-  asNEATConnection: null
 };
 
 export default Visualization;

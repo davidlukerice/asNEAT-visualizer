@@ -1,9 +1,9 @@
 Current:
-
+- d3 network visualization
+  - allow % width/heights
 
 Planned:
 - d3 network visualization
-  - allow % width/heights
   - better y implementation to lesson crossover
   - move disabled connections to lower layer
 
@@ -13,3 +13,5 @@ Planned:
 - waveworm view
 - spectrogram view
 - 3d spectrogram view
+
+(like: http://chromium.googlecode.com/svn/trunk/samples/audio/javascript-processing.html)

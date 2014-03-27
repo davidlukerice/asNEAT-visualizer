@@ -4,6 +4,11 @@ var VConnection = function(parameters) {
 VConnection.prototype.defaultParameters = {
   inVNode: null,
   outVNode: null,
+  
+  //indexes in the nodes array
+  source: 0,
+  target: 1,
+
   asNEATConnection: null
 };
 

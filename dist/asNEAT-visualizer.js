@@ -1,4 +1,4 @@
-/* asNEAT-visualizer 0.0.3 2014-03-17 */
+/* asNEAT-visualizer 0.0.3 2014-03-27 */
 define("asNEAT/asNEAT-visualizer", 
   ["asNEAT/visualization","exports"],
   function(__dependency1__, __exports__) {
@@ -219,11 +219,21 @@ define("asNEAT/visualization",
       this.vConnections = [];
     
       this.refresh();
+    
+      var self = this,
+          oldResize = window.onresize;
+      window.onresize = function() {
+        self.refresh();
+        if (oldResize)
+          oldResize();
+      };
     };
     Visualization.prototype.defaultParameters = {
       network: null,
-      width: 800,
+      // (num) for px, or (string) for %
+      width: "100%",
       height: 600,
+      // (num) for px
       padding: 60,
       selector: '.network',
       animateSpeed: 750
@@ -263,8 +273,9 @@ define("asNEAT/visualization",
     Visualization.prototype.refresh = function() {
       var vNodes = this.vNodes,
           vConnections = this.vConnections,
-          width = this.width,
-          height = this.height,
+          rects = this.svg[0][0].getClientRects()[0],
+          width = rects.width,
+          height = rects.height,
           padding = this.padding,
           animateSpeed = this.animateSpeed;
     

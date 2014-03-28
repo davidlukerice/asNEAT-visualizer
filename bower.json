@@ -1,6 +1,6 @@
 {
   "name": "asNEAT-visualizer",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "homepage": "https://github.com/davidlukerice/asNEAT-visualizer",
   "authors": [
     "David Rice <davidlukerice@gmail.com>"
@@ -30,7 +30,7 @@
   ],
   "dependencies": {
     "jquery": "~1.11.0",
-    "asNEAT": "git://github.com/davidlukerice/asNEAT.git#master",
+    "asNEAT": "~0.0.5",
     "d3": "~3.4.3",
     "lodash": "~2.4.1"
   }

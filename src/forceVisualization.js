@@ -152,8 +152,13 @@ ForceVisualization.prototype.refresh = function() {
   forceLayout.start();
 
   var connection = this.svg.select('.connections').selectAll('.connection')
-      .data(vConnections, getConnectionId)
-    .enter().append('line')
+      .data(vConnections, getConnectionId);
+  
+  connection.transition()
+    .duration(animateSpeed)
+    .style('stroke', getConnectionColor);
+
+  connection.enter().append('line')
       .attr('class', 'connection')
       .style('stroke', getConnectionColor)
       .style('stroke-width', 2);

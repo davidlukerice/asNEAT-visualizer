@@ -20,6 +20,9 @@ var ForceVisualization = function(parameters) {
   this.vNodes = [];
   this.vConnections = [];
 
+  this.forceLayout = null;
+
+  this.start();
   this.refresh();
 
   var self = this,
@@ -67,8 +70,10 @@ ForceVisualization.prototype.updateVisualizationNetwork = function() {
     connections.push(new VConnection({
       inVNode: inNode,
       outVNode: outNode,
-      source: inIndex,
-      target: outIndex,
+      source: inNode,
+      target: outNode,
+      //source: inIndex,
+      //target: outIndex,
       asNEATConnection: connection
     }));
   });
@@ -76,13 +81,52 @@ ForceVisualization.prototype.updateVisualizationNetwork = function() {
   Graph.longestPath(nodes, connections);
 };
 
+ForceVisualization.prototype.start = function() {
+  var svg = this.svg,
+      vNodes = this.vNodes,
+      vConnections = this.vConnections,
+      rects = svg[0][0].getClientRects()[0],
+      width = rects.width,
+      height = rects.height;
+
+  this.forceLayout = d3.layout.force()
+    .charge(-200)
+    .linkDistance(60)
+    .size([width, height]);
+
+  this.forceLayout
+    .nodes(vNodes)
+    .links(vConnections)
+    .start();
+
+  this.forceLayout.on("tick", function() {
+    svg.select('.connections').selectAll('.connection')
+      .attr("x1", function(d) {
+          return d.source.x;
+        })
+        .attr("y1", function(d) {
+          return d.source.y;
+        })
+        .attr("x2", function(d) {
+          return d.target.x;
+        })
+        .attr("y2", function(d) {
+          return d.target.y;
+        });
+
+    svg.select('.nodes').selectAll('.node')
+      .attr("cx", function(d) {
+        return d.x;
+      })
+      .attr("cy", function(d) {
+        return d.y;
+      });
+  });
+};
+
 ForceVisualization.prototype.refresh = function() {
   var vNodes = this.vNodes,
       vConnections = this.vConnections,
-      rects = this.svg[0][0].getClientRects()[0],
-      width = rects.width,
-      height = rects.height,
-      padding = this.padding,
       animateSpeed = this.animateSpeed;
 
   this.updateVisualizationNetwork();
@@ -110,15 +154,8 @@ ForceVisualization.prototype.refresh = function() {
     return e.asNEATConnection.id;
   }
 
-  var force = d3.layout.force()
-    .charge(-200)
-    .linkDistance(60)
-    .size([width, height]);
-
-  force
-    .nodes(vNodes)
-    .links(vConnections)
-    .start();
+  var forceLayout = this.forceLayout;
+  forceLayout.start();
 
   var connection = this.svg.select('.connections').selectAll('.connection')
       .data(vConnections, getConnectionId)
@@ -139,32 +176,10 @@ ForceVisualization.prototype.refresh = function() {
       .attr('stroke', 'black')
       .attr('stroke-width', 2)
       .attr('fill', getNodeColor)
-      .call(force.drag);
+      .call(forceLayout.drag);
 
   //node.append("title")
   //    .text(function(d) { return d.name; });
-
-  force.on("tick", function() {
-    connection.attr("x1", function(d) {
-          return d.source.x;
-        })
-        .attr("y1", function(d) {
-          return d.source.y;
-        })
-        .attr("x2", function(d) {
-          return d.target.x;
-        })
-        .attr("y2", function(d) {
-          return d.target.y;
-        });
-
-    node.attr("cx", function(d) {
-        return d.x;
-      })
-      .attr("cy", function(d) {
-        return d.y;
-      });
-  });
 };
 
 export default ForceVisualization;

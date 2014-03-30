@@ -63,13 +63,13 @@ ForceVisualization.prototype.updateVisualizationNetwork = function() {
     if (conn) return;
 
     // find the in/out nodes
-    var inIndex = _.findIndex(nodes, {'asNEATNode': connection.inNode}),
-        inNode = nodes[inIndex],
-        outIndex = _.findIndex(nodes, {'asNEATNode': connection.outNode}),
-        outNode = nodes[outIndex];
+    var inIndex = _.findIndex(nodes, {'asNEATNode': connection.sourceNode}),
+        sourceNode = nodes[inIndex],
+        outIndex = _.findIndex(nodes, {'asNEATNode': connection.targetNode}),
+        targetNode = nodes[outIndex];
     connections.push(new VConnection({
-      source: inNode,
-      target: outNode,
+      source: sourceNode,
+      target: targetNode,
       asNEATConnection: connection
     }));
   });

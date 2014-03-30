@@ -60,8 +60,8 @@ Visualization.prototype.updateVisualizationNetwork = function() {
     if (conn) return;
 
     // find the in/out nodes
-    var source = _.find(nodes, {'asNEATNode': connection.inNode}),
-        target = _.find(nodes, {'asNEATNode': connection.outNode});
+    var source = _.find(nodes, {'asNEATNode': connection.sourceNode}),
+        target = _.find(nodes, {'asNEATNode': connection.targetNode});
     connections.push(new VConnection({
       source: source,
       target: target,

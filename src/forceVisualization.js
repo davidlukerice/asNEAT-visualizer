@@ -36,7 +36,7 @@ Visualization.prototype.defaultParameters = {
   height: 600,
   // (num) for px
   padding: 60,
-  selector: '.network',
+  selector: '.forceNetwork',
   animateSpeed: 750
 };
 
@@ -59,11 +59,15 @@ Visualization.prototype.updateVisualizationNetwork = function() {
     if (conn) return;
 
     // find the in/out nodes
-    var inNode = _.find(nodes, {'asNEATNode': connection.inNode}),
-        outNode = _.find(nodes, {'asNEATNode': connection.outNode});
+    var inIndex = _.findIndex(nodes, {'asNEATNode': connection.inNode}),
+        inNode = nodes[inIndex],
+        outIndex = _.findIndex(nodes, {'asNEATNode': connection.outNode}),
+        outNode = nodes[outIndex];
     connections.push(new VConnection({
       inVNode: inNode,
       outVNode: outNode,
+      source: inIndex,
+      target: outIndex,
       asNEATConnection: connection
     }));
   });
@@ -81,43 +85,6 @@ Visualization.prototype.refresh = function() {
       animateSpeed = this.animateSpeed;
 
   this.updateVisualizationNetwork();
-
-  function getX(e,i) {
-    return e.getLocalX()*(width-2*padding) + padding;
-  }
-  function getY(e,i) {
-    return e.getLocalY()*(height-2*padding) + padding;
-  }
-
-  var diff = 200;
-  function getInitialD(e,i) {
-    var x1 = getX1(e),
-        y1 = getY1(e);
-    return 'M'+x1+','+y1+' C'+x1+
-           ','+y1+' '+x1+','+y1+
-           ' '+x1+','+y1;
-  }
-  function getD(e,i) {
-    var x1 = getX1(e),
-        y1 = getY1(e),
-        x2 = getX2(e),
-        y2 = getY2(e);
-    return 'M'+x1+','+y1+' C'+(x1+diff)+
-           ','+y1+' '+(x2-diff)+','+y2+
-           ' '+x2+','+y2;
-  }
-  function getX1(e) {
-    return getX(e.inVNode);
-  }
-  function getY1(e) {
-    return getY(e.inVNode);
-  }
-  function getX2(e) {
-    return getX(e.outVNode);
-  }
-  function getY2(e) {
-    return getY(e.outVNode);
-  }
 
   function getNodeColor(e) {
     if (e.asNEATNode instanceof OscillatorNode)
@@ -138,11 +105,63 @@ Visualization.prototype.refresh = function() {
     return e.asNEATConnection.id;
   }
 
-  var dNodes = this.svg
-    .select('.nodes')
-    .selectAll('.node')
-    .data(vNodes);
+  var force = d3.layout.force()
+    .charge(-200)
+    .linkDistance(60)
+    .size([width, height]);
 
+  force
+    .nodes(vNodes)
+    .links(vConnections)
+    .start();
+
+  var link = this.svg.select('.connections').selectAll('.connection')
+      .data(vConnections, getConnectionId)
+    .enter().append('line')
+      .attr('class', 'connection')
+      .style('stroke', getConnectionColor)
+      .style('stroke-width', 2);
+      //.style("stroke-width", function(d) {
+      //  return Math.sqrt(d.asNEATConnection.weight);
+      //});
+
+  var color = d3.scale.category20();
+  var node = this.svg.select('.nodes').selectAll('.node')
+      .data(vNodes)
+    .enter().append("circle")
+      .attr("class", "node")
+      .attr("r", 10)
+      .attr('stroke', 'black')
+      .attr('stroke-width', 2)
+      .attr('fill', getNodeColor)
+      .call(force.drag);
+
+  //node.append("title")
+  //    .text(function(d) { return d.name; });
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) {
+          return d.source.x;
+        })
+        .attr("y1", function(d) {
+          return d.source.y;
+        })
+        .attr("x2", function(d) {
+          return d.target.x;
+        })
+        .attr("y2", function(d) {
+          return d.target.y;
+        });
+
+    node.attr("cx", function(d) {
+        return d.x;
+      })
+      .attr("cy", function(d) {
+        return d.y;
+      });
+  });
+
+  /*
   dNodes.transition()
     .duration(animateSpeed)
     .attr('cx', getX)
@@ -197,7 +216,7 @@ Visualization.prototype.refresh = function() {
     .attr('y', getY)
     .style('fill', 'red')
     .text(function(e){return e.getLabel();});
-
+*/
 };
 
 export default Visualization;

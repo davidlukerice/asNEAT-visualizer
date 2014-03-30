@@ -32,6 +32,10 @@
 
     <br>
     <br>
+    <h2>Force Visualization</h2>
+    <div class="forceNetwork">
+    </div>
+
     <h2>Visualization</h2>
     <div class="network">
     </div>
@@ -49,7 +53,8 @@
     <script type="text/javascript">
       !function() {
         var network,
-            visualization;
+            visualization,
+            forceVisualiza;
 
         $(function() {
           var Utils = require('asNEAT/utils')['default'],
@@ -61,6 +66,10 @@
             .addOscillator()
             .splitMutation()
             .splitMutation();
+
+          forceVisualization = Visualizer.createForceVisualization({
+            network: network
+          });
 
           visualization = Visualizer.createVisualization({
             network: network
@@ -102,6 +111,7 @@
 
         function updateVisualization() {
             visualization.refresh();
+            forceVisualization.refresh();
             $('.networkToString').html(network.toString());
           }
       }();

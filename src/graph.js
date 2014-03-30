@@ -32,27 +32,27 @@ Graph.longestPath = function(vNodes, vConns) {
   while (stack.length) {
     var conn = stack.pop();
 
-    var inVNode = conn.inVNode;
-    var outVNode = conn.outVNode;
+    var source = conn.source;
+    var target = conn.target;
 
-    if (inVNode.longestPath) {
+    if (source.longestPath) {
       log('todo collision');
     }
     else {
-      var path = outVNode.longestPath;
+      var path = target.longestPath;
       
       // check outNode is the last node in path
       // if not, duplicate path from outNode
-      if (!path.isLastNode(outVNode))
+      if (!path.isLastNode(target))
         path = path.duplicateFromNode(outNode);
 
-      path.pushNode(inVNode);
-      inVNode.numHops = path.getLength();
-      inVNode.longestPath = path;
+      path.pushNode(source);
+      source.numHops = path.getLength();
+      source.longestPath = path;
     }
 
     // push on next connections
-    stack = _.union(stack, Graph.getConnectionsGoingTo(inVNode, vConns));
+    stack = _.union(stack, Graph.getConnectionsGoingTo(source, vConns));
   }
 
   // foreach node increment # in hash w/ key of x & assign (h[x]-1) as YIndex;
@@ -70,9 +70,9 @@ Graph.longestPath = function(vNodes, vConns) {
   });
 };
 
-Graph.getConnectionsGoingTo = function(vNode, vConnections) {
+Graph.getConnectionsGoingTo = function(target, vConnections) {
   return _.filter(vConnections, function(e) {
-    return e.asNEATConnection.enabled && e.outVNode === vNode;
+    return e.asNEATConnection.enabled && e.target === target;
   });
 };
 

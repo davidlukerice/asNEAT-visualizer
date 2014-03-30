@@ -68,17 +68,11 @@ ForceVisualization.prototype.updateVisualizationNetwork = function() {
         outIndex = _.findIndex(nodes, {'asNEATNode': connection.outNode}),
         outNode = nodes[outIndex];
     connections.push(new VConnection({
-      inVNode: inNode,
-      outVNode: outNode,
       source: inNode,
       target: outNode,
-      //source: inIndex,
-      //target: outIndex,
       asNEATConnection: connection
     }));
   });
-
-  Graph.longestPath(nodes, connections);
 };
 
 ForceVisualization.prototype.start = function() {

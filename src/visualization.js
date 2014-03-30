@@ -60,11 +60,11 @@ Visualization.prototype.updateVisualizationNetwork = function() {
     if (conn) return;
 
     // find the in/out nodes
-    var inNode = _.find(nodes, {'asNEATNode': connection.inNode}),
-        outNode = _.find(nodes, {'asNEATNode': connection.outNode});
+    var source = _.find(nodes, {'asNEATNode': connection.inNode}),
+        target = _.find(nodes, {'asNEATNode': connection.outNode});
     connections.push(new VConnection({
-      inVNode: inNode,
-      outVNode: outNode,
+      source: source,
+      target: target,
       asNEATConnection: connection
     }));
   });
@@ -108,16 +108,16 @@ Visualization.prototype.refresh = function() {
            ' '+x2+','+y2;
   }
   function getX1(e) {
-    return getX(e.inVNode);
+    return getX(e.source);
   }
   function getY1(e) {
-    return getY(e.inVNode);
+    return getY(e.source);
   }
   function getX2(e) {
-    return getX(e.outVNode);
+    return getX(e.target);
   }
   function getY2(e) {
-    return getY(e.outVNode);
+    return getY(e.target);
   }
 
   function getNodeColor(e) {

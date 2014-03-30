@@ -1,11 +1,12 @@
 
 var OscillatorNode = require('asNEAT/nodes/oscillatorNode')['default'],
+    NoteOscillatorNode = require('asNEAT/nodes/noteOscillatorNode')['default'],
     OutNode = require('asNEAT/nodes/outNode')['default'],
     VNode = require('asNEAT/vNode')['default'],
     VConnection = require('asNEAT/vConnection')['default'],
     Graph = require('asNEAT/graph')['default'];
 
-var Visualization = function(parameters) {
+var ForceVisualization = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
 
   var svg = d3.select(this.selector).append('svg')
@@ -29,7 +30,7 @@ var Visualization = function(parameters) {
       oldResize();
   };
 };
-Visualization.prototype.defaultParameters = {
+ForceVisualization.prototype.defaultParameters = {
   network: null,
   // (num) for px, or (string) for %
   width: "100%",
@@ -43,7 +44,7 @@ Visualization.prototype.defaultParameters = {
 /*
   creates a representation of each node/connection in the network to be shown
  **/
-Visualization.prototype.updateVisualizationNetwork = function() {
+ForceVisualization.prototype.updateVisualizationNetwork = function() {
   
   var nodes = this.vNodes,
       connections = this.vConnections;
@@ -75,7 +76,7 @@ Visualization.prototype.updateVisualizationNetwork = function() {
   Graph.longestPath(nodes, connections);
 };
 
-Visualization.prototype.refresh = function() {
+ForceVisualization.prototype.refresh = function() {
   var vNodes = this.vNodes,
       vConnections = this.vConnections,
       rects = this.svg[0][0].getClientRects()[0],
@@ -87,7 +88,8 @@ Visualization.prototype.refresh = function() {
   this.updateVisualizationNetwork();
 
   function getNodeColor(e) {
-    if (e.asNEATNode instanceof OscillatorNode)
+    if (e.asNEATNode instanceof OscillatorNode ||
+        e.asNEATNode instanceof NoteOscillatorNode)
       return "green";
     if (e.asNEATNode instanceof OutNode)
       return "black";
@@ -101,6 +103,9 @@ Visualization.prototype.refresh = function() {
       return 'gray';
   }
 
+  function getNodeId(e) {
+    return e.asNEATNode.id;
+  }
   function getConnectionId(e) {
     return e.asNEATConnection.id;
   }
@@ -115,7 +120,7 @@ Visualization.prototype.refresh = function() {
     .links(vConnections)
     .start();
 
-  var link = this.svg.select('.connections').selectAll('.connection')
+  var connection = this.svg.select('.connections').selectAll('.connection')
       .data(vConnections, getConnectionId)
     .enter().append('line')
       .attr('class', 'connection')
@@ -127,7 +132,7 @@ Visualization.prototype.refresh = function() {
 
   var color = d3.scale.category20();
   var node = this.svg.select('.nodes').selectAll('.node')
-      .data(vNodes)
+      .data(vNodes, getNodeId)
     .enter().append("circle")
       .attr("class", "node")
       .attr("r", 10)
@@ -140,7 +145,7 @@ Visualization.prototype.refresh = function() {
   //    .text(function(d) { return d.name; });
 
   force.on("tick", function() {
-    link.attr("x1", function(d) {
+    connection.attr("x1", function(d) {
           return d.source.x;
         })
         .attr("y1", function(d) {
@@ -160,63 +165,6 @@ Visualization.prototype.refresh = function() {
         return d.y;
       });
   });
-
-  /*
-  dNodes.transition()
-    .duration(animateSpeed)
-    .attr('cx', getX)
-    .attr('cy', getY)
-    .attr('r', 10);
-
-  dNodes.enter().append('circle')
-    .attr('class', 'node')
-    .attr('cx', getX)
-    .attr('cy', getY)
-    .attr('r', 0)
-    .attr('stroke', 'black')
-    .attr('stroke-width', 2)
-    .attr('fill', getNodeColor)
-    .transition()
-      .duration(animateSpeed)
-      .attr('r', 10);
-
-  // Render connections
-  var dConnections = this.svg
-      .select('.connections')
-      .selectAll('.connection')
-      .data(vConnections, getConnectionId);
-
-  dConnections.transition()
-    .duration(animateSpeed)
-    .attr('d', getD)
-    .style('stroke', getConnectionColor);
-
-  dConnections.enter().append('path')
-    .attr('class', 'connection')
-    .attr('d', getInitialD)
-    .attr('fill', 'none')
-    .style('stroke', getConnectionColor)
-    .style('stroke-width', 2)
-    .transition()
-      .duration(animateSpeed)
-      .attr('d', getD);
-
-  var dInfo = this.svg
-      .select('.labels')
-      .selectAll('.label')
-      .data(vNodes);
-  dInfo.transition()
-    .duration(animateSpeed)
-    .attr('x', getX)
-    .attr('y', getY)
-    .text(function(e){return e.getLabel();});
-  dInfo.enter().append('text')
-    .attr('class', 'label')
-    .attr('x', getX)
-    .attr('y', getY)
-    .style('fill', 'red')
-    .text(function(e){return e.getLabel();});
-*/
 };
 
-export default Visualization;
+export default ForceVisualization;

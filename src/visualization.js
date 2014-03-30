@@ -1,5 +1,6 @@
 
 var OscillatorNode = require('asNEAT/nodes/oscillatorNode')['default'],
+    NoteOscillatorNode = require('asNEAT/nodes/noteOscillatorNode')['default'],
     OutNode = require('asNEAT/nodes/outNode')['default'],
     VNode = require('asNEAT/vNode')['default'],
     VConnection = require('asNEAT/vConnection')['default'],
@@ -120,7 +121,8 @@ Visualization.prototype.refresh = function() {
   }
 
   function getNodeColor(e) {
-    if (e.asNEATNode instanceof OscillatorNode)
+    if (e.asNEATNode instanceof OscillatorNode ||
+        e.asNEATNode instanceof NoteOscillatorNode)
       return "green";
     if (e.asNEATNode instanceof OutNode)
       return "black";

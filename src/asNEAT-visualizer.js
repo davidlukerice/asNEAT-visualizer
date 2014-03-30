@@ -12,6 +12,6 @@ Visualizer.createVisualization = function(parameters) {
 
 Visualizer.createForceVisualization = function(parameters) {
   return new ForceVisualization(parameters);
-}
+};
 
 export default Visualizer;

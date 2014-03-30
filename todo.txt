@@ -1,10 +1,9 @@
 Current:
 - d3 network visualization
-  - allow % width/heights
+  - force layout
 
 Planned:
 - d3 network visualization
-  - better y implementation to lesson crossover
   - move disabled connections to lower layer
 
 - concat_sourcemap

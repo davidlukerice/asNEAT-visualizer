@@ -20,11 +20,21 @@ var Visualization = function(parameters) {
   this.vConnections = [];
 
   this.refresh();
+
+  var self = this,
+      oldResize = window.onresize;
+  window.onresize = function() {
+    self.refresh();
+    if (oldResize)
+      oldResize();
+  };
 };
 Visualization.prototype.defaultParameters = {
   network: null,
-  width: 800,
+  // (num) for px, or (string) for %
+  width: "100%",
   height: 600,
+  // (num) for px
   padding: 60,
   selector: '.network',
   animateSpeed: 750
@@ -68,8 +78,9 @@ Visualization.prototype.updateVisualizationNetwork = function() {
 Visualization.prototype.refresh = function() {
   var vNodes = this.vNodes,
       vConnections = this.vConnections,
-      width = this.width,
-      height = this.height,
+      rects = this.svg[0][0].getClientRects()[0],
+      width = rects.width,
+      height = rects.height,
       padding = this.padding,
       animateSpeed = this.animateSpeed;
 

@@ -12,10 +12,24 @@ var ForceVisualization = function(parameters) {
   var svg = d3.select(this.selector).append('svg')
     .attr('width', this.width)
     .attr('height', this.height);
+  svg.append('g').attr('class', 'labels');
   svg.append('g').attr('class', 'connections');
   svg.append('g').attr('class', 'nodes');
-  svg.append('g').attr('class', 'labels');
   this.svg = svg;
+
+  var color = {enabled:'black', disabled:'gray'};
+  this.svg.append("defs").selectAll("marker")
+    .data(["enabled", "disabled"])
+  .enter().append("marker")
+    .attr("id", function(d) { return d; })
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 15)
+    .attr("refY", 0)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+  .append("path")
+    .attr("d", "M0,-5L10,0L0,5");
 
   this.vNodes = [];
   this.vConnections = [];
@@ -100,25 +114,24 @@ ForceVisualization.prototype.start = function() {
 
   this.forceLayout.on("tick", function() {
     svg.select('.connections').selectAll('.connection')
-      .attr("x1", function(d) {
-          return d.source.x;
-        })
-        .attr("y1", function(d) {
-          return d.source.y;
-        })
-        .attr("x2", function(d) {
-          return d.target.x;
-        })
-        .attr("y2", function(d) {
-          return d.target.y;
-        });
+      .attr('d', function(d) {
+        return 'M'+d.source.x+' '+d.source.y+' '+d.target.x+' '+d.target.y;
+      });
 
-    svg.select('.nodes').selectAll('.node')
+    var nodes = svg.select('.nodes').selectAll('.node')
       .attr("cx", function(d) {
         return d.x;
       })
       .attr("cy", function(d) {
         return d.y;
+      });
+
+    svg.select('.labels').selectAll('.label')
+      .attr("x", function(d, i) {
+        return nodes[0][i].cx.baseVal.value;
+      })
+      .attr("y", function(d, i) {
+        return nodes[0][i].cy.baseVal.value-10;
       });
   });
 };
@@ -158,25 +171,29 @@ ForceVisualization.prototype.refresh = function() {
       "" : "5,5";
   }
 
+  function getMarker(conn) {
+    return "url(#"+
+      (conn.asNEATConnection.enabled ? "enabled" : "disabled")+
+      ")";
+  }
+
   var forceLayout = this.forceLayout;
   forceLayout.start();
 
-  var connection = this.svg.select('.connections').selectAll('.connection')
-      .data(vConnections, getConnectionId);
+  var connections = this.svg.select('.connections').selectAll('.connection')
+    .data(vConnections, getConnectionId);
   
-  connection.transition()
+  connections.enter().append("path")
+    .attr('class', 'connection')
+    .style('stroke', getConnectionColor)
+    .style('stroke-width', 2)
+    .style('stroke-dasharray', getDashArray)
+    .attr("marker-end", getMarker);
+
+  connections.transition()
     .duration(animateSpeed)
     .style('stroke', getConnectionColor)
     .style('stroke-dasharray', getDashArray);
-
-  connection.enter().append('line')
-      .attr('class', 'connection')
-      .style('stroke', getConnectionColor)
-      .style('stroke-width', 2)
-      .style('stroke-dasharray', getDashArray);
-      //.style("stroke-width", function(d) {
-      //  return Math.sqrt(d.asNEATConnection.weight);
-      //});
 
   var color = d3.scale.category20();
   var node = this.svg.select('.nodes').selectAll('.node')
@@ -195,8 +212,22 @@ ForceVisualization.prototype.refresh = function() {
         d3.select(this).style("fill",getNodeColor(d));
       });
 
+  var labels = this.svg.select('.labels').selectAll('.label')
+    .data(vNodes, getNodeId)
+    .enter().append('text')
+      .attr('class', "label")
+      .attr('text-anchor', 'middle')
+      .style('font-size', '8px')
+      .text(function(d, i) {
+        return getCapitals(vNodes[i].asNEATNode.name);
+      });
+
   //node.append("title")
   //    .text(function(d) { return d.name; });
 };
+
+function getCapitals(str) {
+  return str.replace(/[a-z]/g, '');
+}
 
 export default ForceVisualization;

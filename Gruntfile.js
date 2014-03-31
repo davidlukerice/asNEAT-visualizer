@@ -27,6 +27,14 @@ module.exports = function(grunt) {
           src: ['**/*.js'],
           dest: 'tmp/javascript/'
         }]
+      },
+      css: {
+        files: [{
+          expand: true,
+          cwd: 'src',
+          src:['*.css'],
+          dest: 'dist'
+        }]
       }
     },
 
@@ -76,8 +84,8 @@ module.exports = function(grunt) {
         tasks: ['jshint', 'qunit']        
       },
       build: {
-        files: ['src/**/*.js'],
-        tasks: ['clean', 'copy', 'transpile', 'concat', 'uglify']
+        files: ['src/**/*.js', 'src/**/*.css'],
+        tasks: ['clean', 'copy:main', 'copy:css', 'transpile', 'concat', 'uglify']
       }
     },
     concurrent: {
@@ -102,8 +110,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-es6-module-transpiler');
 
   // tasks
-  grunt.registerTask('test', ['jshint', 'build', 'qunit']);
-  grunt.registerTask('build', ['clean', 'copy', 'transpile', 'concat', 'uglify']);
-  grunt.registerTask('watchBuild', ['jshint', 'build', 'qunit', 'concurrent:watches']);
-  grunt.registerTask('default', ['watchBuild']);
+  grunt.registerTask('test',
+    ['jshint', 'build', 'qunit']);
+  grunt.registerTask('build',
+    ['clean', 'copy:main', 'copy:css', 'transpile', 'concat', 'uglify']);
+  grunt.registerTask('watchBuild',
+    ['jshint', 'build', 'qunit', 'concurrent:watches']);
+  grunt.registerTask('default',
+    ['watchBuild']);
 };

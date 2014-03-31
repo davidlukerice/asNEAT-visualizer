@@ -1,0 +1,7 @@
+
+svg marker#enabled {
+  fill: black;
+}
+svg marker#disabled {
+  fill: gray;
+}

@@ -84,8 +84,13 @@ ForceVisualization.prototype.start = function() {
       height = rects.height;
 
   this.forceLayout = d3.layout.force()
+    .gravity(0.05)
+    .friction(0.9)
     .charge(-200)
     .linkDistance(60)
+    .linkStrength(function(link) {
+      return link.asNEATConnection.enabled;
+    })
     .size([width, height]);
 
   this.forceLayout
@@ -171,9 +176,9 @@ ForceVisualization.prototype.refresh = function() {
       .data(vNodes, getNodeId)
     .enter().append("circle")
       .attr("class", "node")
-      .attr("r", 10)
+      .attr("r", 7)
       .attr('stroke', 'black')
-      .attr('stroke-width', 2)
+      .attr('stroke-width', 1)
       .attr('fill', getNodeColor)
       .call(forceLayout.drag);
 

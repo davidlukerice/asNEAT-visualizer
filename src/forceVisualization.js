@@ -186,14 +186,14 @@ ForceVisualization.prototype.refresh = function() {
   connections.enter().append("path")
     .attr('class', 'connection')
     .style('stroke', getConnectionColor)
-    .style('stroke-width', 2)
     .style('stroke-dasharray', getDashArray)
     .attr("marker-end", getMarker);
 
   connections.transition()
     .duration(animateSpeed)
     .style('stroke', getConnectionColor)
-    .style('stroke-dasharray', getDashArray);
+    .style('stroke-dasharray', getDashArray)
+    .attr("marker-end", getMarker);
 
   var color = d3.scale.category20();
   var node = this.svg.select('.nodes').selectAll('.node')
@@ -201,29 +201,22 @@ ForceVisualization.prototype.refresh = function() {
     .enter().append("circle")
       .attr("class", "node")
       .attr("r", 8)
-      .attr('stroke', 'black')
-      .attr('stroke-width', 1)
       .attr('fill', getNodeColor)
       .call(forceLayout.drag)
       .on("mouseover", function(){
-        d3.select(this).style("fill", "#999");
+
       })
       .on("mouseout", function(d) {
-        d3.select(this).style("fill",getNodeColor(d));
+
       });
 
   var labels = this.svg.select('.labels').selectAll('.label')
     .data(vNodes, getNodeId)
     .enter().append('text')
       .attr('class', "label")
-      .attr('text-anchor', 'middle')
-      .style('font-size', '8px')
       .text(function(d, i) {
         return getCapitals(vNodes[i].asNEATNode.name);
       });
-
-  //node.append("title")
-  //    .text(function(d) { return d.name; });
 };
 
 function getCapitals(str) {

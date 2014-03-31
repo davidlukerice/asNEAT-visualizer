@@ -153,6 +153,11 @@ ForceVisualization.prototype.refresh = function() {
     return e.asNEATConnection.id;
   }
 
+  function getDashArray(conn) {
+    return conn.asNEATConnection.enabled ?
+      "" : "5,5";
+  }
+
   var forceLayout = this.forceLayout;
   forceLayout.start();
 
@@ -161,12 +166,14 @@ ForceVisualization.prototype.refresh = function() {
   
   connection.transition()
     .duration(animateSpeed)
-    .style('stroke', getConnectionColor);
+    .style('stroke', getConnectionColor)
+    .style('stroke-dasharray', getDashArray);
 
   connection.enter().append('line')
       .attr('class', 'connection')
       .style('stroke', getConnectionColor)
-      .style('stroke-width', 2);
+      .style('stroke-width', 2)
+      .style('stroke-dasharray', getDashArray);
       //.style("stroke-width", function(d) {
       //  return Math.sqrt(d.asNEATConnection.weight);
       //});
@@ -176,11 +183,17 @@ ForceVisualization.prototype.refresh = function() {
       .data(vNodes, getNodeId)
     .enter().append("circle")
       .attr("class", "node")
-      .attr("r", 7)
+      .attr("r", 8)
       .attr('stroke', 'black')
       .attr('stroke-width', 1)
       .attr('fill', getNodeColor)
-      .call(forceLayout.drag);
+      .call(forceLayout.drag)
+      .on("mouseover", function(){
+        d3.select(this).style("fill", "#999");
+      })
+      .on("mouseout", function(d) {
+        d3.select(this).style("fill",getNodeColor(d));
+      });
 
   //node.append("title")
   //    .text(function(d) { return d.name; });

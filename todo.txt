@@ -1,20 +1,19 @@
 Current:
 - d3 network visualization
   - force layout
-    - Text
-    - Panning
-    - Zooming
     - Hover for node/connection brief
-    - Clock for node Detailed
-    - "Highlight" last changes?
-    - More stylized
-      - graphics
-      - More connected nodes are larger?
-      - Connection width based on weight?
 
 Planned:
 - d3 network visualization
-  - move disabled connections to lower layer
+    - force layout
+      - Panning
+      - Zooming
+      - Clock for node Detailed
+      - "Highlight" last changes?
+      - More stylized
+        - graphics
+        - More connected nodes are larger?
+        - Connection width based on weight?
 
 - concat_sourcemap
 

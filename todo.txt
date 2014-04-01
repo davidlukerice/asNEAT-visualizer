@@ -9,6 +9,8 @@ Planned:
       - Zooming
       - Clock for node Detailed
       - "Highlight" last changes?
+      - add larger 'hitbox' for connection for tooltip
+        - (could add a 'hidden' connection under with larger width)
       - More stylized
         - graphics
         - More connected nodes are larger?

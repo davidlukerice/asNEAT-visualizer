@@ -1,12 +1,11 @@
 Current:
 - d3 network visualization
   - force layout
-    - Hover for node/connection brief
+    - Panning
 
 Planned:
 - d3 network visualization
     - force layout
-      - Panning
       - Zooming
       - Clock for node Detailed
       - "Highlight" last changes?
@@ -14,6 +13,7 @@ Planned:
         - graphics
         - More connected nodes are larger?
         - Connection width based on weight?
+      - cleanup... the file's getting a bit messy
 
 - concat_sourcemap
 

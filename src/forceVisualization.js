@@ -15,6 +15,19 @@ var ForceVisualization = function(parameters) {
   svg.append('g').attr('class', 'labels');
   svg.append('g').attr('class', 'connections');
   svg.append('g').attr('class', 'nodes');
+  svg.append('foreignObject')
+    .attr('class', 'parameterToolTip')
+    .attr("width", 240)
+    .attr("height", 500)
+    .append("xhtml:body")
+      .style({
+        "display": "none",
+        "font": "14px 'Helvetica Neue'",
+        "border-radius": "5px",
+        'background': "rgba(180, 180, 180, 0.9)",
+        'padding': "5px"
+      });
+
   this.svg = svg;
 
   var color = {enabled:'black', disabled:'gray'};
@@ -187,13 +200,30 @@ ForceVisualization.prototype.refresh = function() {
     .attr('class', 'connection')
     .style('stroke', getConnectionColor)
     .style('stroke-dasharray', getDashArray)
-    .attr("marker-end", getMarker);
+    .attr("marker-end", getMarker)
+    .on("mouseover", function(d, i){
+      parameterToolTip
+        .attr('x', (d.target.x+d.source.x)/2)
+        .attr('y', (d.target.y+d.source.y)/2);
+      var html = buildParameterHtml(d.asNEATConnection.getParameters());
+      parameterToolTipHtml
+        .html(html)
+        .style("display", "inline-block");
+    })
+    .on("mouseout", function(d) {
+      parameterToolTipHtml
+        .html('')
+        .style("display", "none");
+    });
 
   connections.transition()
     .duration(animateSpeed)
     .style('stroke', getConnectionColor)
     .style('stroke-dasharray', getDashArray)
     .attr("marker-end", getMarker);
+
+  var parameterToolTip = this.svg.select('.parameterToolTip');
+  var parameterToolTipHtml = parameterToolTip.select('body');
 
   var color = d3.scale.category20();
   var node = this.svg.select('.nodes').selectAll('.node')
@@ -203,11 +233,19 @@ ForceVisualization.prototype.refresh = function() {
       .attr("r", 8)
       .attr('fill', getNodeColor)
       .call(forceLayout.drag)
-      .on("mouseover", function(){
-
+      .on("mouseover", function(d, i){
+        parameterToolTip
+          .attr('x', d.x)
+          .attr('y', d.y);
+        var html = buildParameterHtml(d.asNEATNode.getParameters());
+        parameterToolTipHtml
+          .html(html)
+          .style("display", "inline-block");
       })
       .on("mouseout", function(d) {
-
+        parameterToolTipHtml
+          .html('')
+          .style("display", "none");
       });
 
   var labels = this.svg.select('.labels').selectAll('.label')
@@ -218,6 +256,16 @@ ForceVisualization.prototype.refresh = function() {
         return getCapitals(vNodes[i].asNEATNode.name);
       });
 };
+
+function buildParameterHtml(parameters) {
+  return "<div class='tooltip'>" +
+    _.reduce(parameters, function(result, value, key) {
+      if (key==="name")
+        return result+"<b>"+value+"</b><br>";
+      return result+key+": "+value+"<br>";
+    }, "") +
+    "</div>";
+}
 
 function getCapitals(str) {
   return str.replace(/[a-z]/g, '');

@@ -258,6 +258,7 @@ define("asNEAT/forceVisualization",
       }
     
       var forceLayout = this.forceLayout;
+      forceLayout.size([rect.width, rect.height]);
       forceLayout.start();
     
       var connections = this.svg.select('.connections').selectAll('.connection')

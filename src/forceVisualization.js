@@ -1,4 +1,3 @@
-
 var OscillatorNode = require('asNEAT/nodes/oscillatorNode')['default'],
     NoteOscillatorNode = require('asNEAT/nodes/noteOscillatorNode')['default'],
     OutNode = require('asNEAT/nodes/outNode')['default'],
@@ -42,11 +41,12 @@ var ForceVisualization = function(parameters) {
     .attr("height", 500)
     .append("xhtml:body")
       .style({
-        "display": "none",
-        "font": "14px 'Helvetica Neue'",
-        "border-radius": "5px",
-        'background': "rgba(180, 180, 180, 0.9)",
-        'padding': "5px"
+        'display': 'none',
+        'font': "14px 'Helvetica Neue'",
+        'border-radius': '5px',
+        'background': 'rgba(180, 180, 180, 0.9)',
+        'margin': '10px',
+        'padding': '5px'
       });
 
   this.svg = svg;

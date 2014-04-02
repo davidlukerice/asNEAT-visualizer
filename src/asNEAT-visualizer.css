@@ -3,22 +3,21 @@ svg marker#enabled {
   fill: black;
 }
 svg marker#disabled {
-  fill: gray;
+  fill: #aaa;
 }
 svg .connections .connection {
-  stroke-width: 2
+  stroke-width: 3;
 }
 
 svg .nodes .node {
-  stroke: black;
-  stroke-width: 1;
+  stroke-width: 2;
 }
 
 svg .nodes .node:hover {
-  fill: #999;
+  fill: #aaa;
 }
 
 svg .labels .label {
   text-anchor: middle;
-  font-size: 8px;
+  font-size: 10px;
 }

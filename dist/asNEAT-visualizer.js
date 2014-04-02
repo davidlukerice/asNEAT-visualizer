@@ -115,8 +115,6 @@ define("asNEAT/forceVisualization",
       // (num) for px, or (string) for %
       width: "100%",
       height: 600,
-      // (num) for px
-      padding: 60,
       selector: '.forceNetwork',
       animateSpeed: 750
     };
@@ -327,7 +325,7 @@ define("asNEAT/forceVisualization",
     };
     
     function buildParameterHtml(parameters) {
-      return "<div class='tooltip'>" +
+      return "<div>" +
         _.reduce(parameters, function(result, value, key) {
           if (key==="name")
             return result+"<b>"+value+"</b><br>";

@@ -1,6 +1,7 @@
 Current:
 - d3 network visualization
   - force layout
+    - "clear" zoom/pan button
     - "Highlight" last changes
 
 Planned:

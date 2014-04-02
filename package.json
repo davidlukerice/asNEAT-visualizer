@@ -1,7 +1,7 @@
 {
   "name": "asNEAT-visualizer",
   "moduleName": "asNEAT",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A set of visualizations for an asNEAT network",
   "main": "./dist/asNEAT-visualizer.js",
   "scripts": {

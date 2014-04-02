@@ -2,6 +2,8 @@ Current:
 - d3 network visualization
   - force layout
     - "clear" zoom/pan button
+    - clear zoom/pan on window change
+    - automatic inital zoom based on longest path length?
     - "Highlight" last changes
 
 Planned:

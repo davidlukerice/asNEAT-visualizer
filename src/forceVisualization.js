@@ -9,13 +9,34 @@ var OscillatorNode = require('asNEAT/nodes/oscillatorNode')['default'],
 var ForceVisualization = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
 
-  var svg = d3.select(this.selector).append('svg')
-    .attr('width', this.width)
-    .attr('height', this.height);
-  svg.append('g').attr('class', 'labels');
-  svg.append('g').attr('class', 'connections');
-  svg.append('g').attr('class', 'nodes');
-  svg.append('foreignObject')
+  var self = this;
+
+  var svg = d3.select(this.selector)
+    .append('svg')
+      .attr('width', this.width)
+      .attr('height', this.height)
+      .attr('pointer-events', 'all');
+  
+  // Have the back group watch for zoom events and move the forward group.
+  // This fixes the issue of dragging a node also call the zoom events
+  var backG = svg.append('g')
+      .call(d3.behavior.zoom().on('zoom', function() {
+        frontG.attr("transform",
+          "translate(" + d3.event.translate + ")" +
+          " scale(" + d3.event.scale + ")"); 
+      }));
+
+  var frontG = svg.append('g');
+
+  backG.append('rect')
+    .attr('class', 'draggableRect')
+    .attr('fill', 'rgba(1,1,1,0)');
+
+  frontG.append('g').attr('class', 'connections');
+  frontG.append('g').attr('class', 'labels');
+  frontG.append('g').attr('class', 'nodes');
+
+  frontG.append('foreignObject')
     .attr('class', 'parameterToolTip')
     .attr("width", 240)
     .attr("height", 500)
@@ -29,14 +50,15 @@ var ForceVisualization = function(parameters) {
       });
 
   this.svg = svg;
+  this.g = frontG;
 
   var color = {enabled:'black', disabled:'gray'};
-  this.svg.append("defs").selectAll("marker")
+  frontG.append("defs").selectAll("marker")
     .data(["enabled", "disabled"])
   .enter().append("marker")
     .attr("id", function(d) { return d; })
     .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 25)
+    .attr("refX", 20)
     .attr("refY", 0)
     .attr("markerWidth", 3)
     .attr("markerHeight", 3)
@@ -52,8 +74,7 @@ var ForceVisualization = function(parameters) {
   this.start();
   this.refresh();
 
-  var self = this,
-      oldResize = window.onresize;
+  var oldResize = window.onresize;
   window.onresize = function() {
     self.refresh();
     if (oldResize)
@@ -102,19 +123,23 @@ ForceVisualization.prototype.updateVisualizationNetwork = function() {
   });
 };
 
+ForceVisualization.prototype.getRect = function() {
+  return this.svg[0][0].getClientRects()[0];
+};
+
 ForceVisualization.prototype.start = function() {
   var svg = this.svg,
       vNodes = this.vNodes,
       vConnections = this.vConnections,
-      rects = svg[0][0].getClientRects()[0],
-      width = rects.width,
-      height = rects.height;
+      rect = this.getRect(),
+      width = rect.width,
+      height = rect.height;
 
   this.forceLayout = d3.layout.force()
     .gravity(0.05)
     .friction(0.9)
     .charge(-200)
-    .linkDistance(60)
+    .linkDistance(90)
     .linkStrength(function(link) {
       return link.asNEATConnection.enabled;
     })
@@ -144,7 +169,7 @@ ForceVisualization.prototype.start = function() {
         return nodes[0][i].cx.baseVal.value;
       })
       .attr("y", function(d, i) {
-        return nodes[0][i].cy.baseVal.value-10;
+        return nodes[0][i].cy.baseVal.value-14;
       });
   });
 };
@@ -152,24 +177,37 @@ ForceVisualization.prototype.start = function() {
 ForceVisualization.prototype.refresh = function() {
   var vNodes = this.vNodes,
       vConnections = this.vConnections,
-      animateSpeed = this.animateSpeed;
+      animateSpeed = this.animateSpeed,
+      rect = this.getRect();
 
   this.updateVisualizationNetwork();
+
+  this.svg.select('.draggableRect')
+    .attr('width', rect.width)
+    .attr('height', rect.height);
 
   function getNodeColor(e) {
     if (e.asNEATNode instanceof OscillatorNode ||
         e.asNEATNode instanceof NoteOscillatorNode)
-      return "green";
+      return "#28b62c";
     if (e.asNEATNode instanceof OutNode)
-      return "black";
-    return "red";
+      return "#222";
+    return "#158cba";
+  }
+  function getNodeStrokeColor(e) {
+    if (e.asNEATNode instanceof OscillatorNode ||
+        e.asNEATNode instanceof NoteOscillatorNode)
+      return "#23a127";
+    if (e.asNEATNode instanceof OutNode)
+      return "#111";
+    return "#127ba3";
   }
 
   function getConnectionColor(e) {
     if (e.asNEATConnection.enabled)
-      return 'black';
+      return '#111';
     else
-      return 'gray';
+      return '#aaa';
   }
 
   function getNodeId(e) {
@@ -230,8 +268,9 @@ ForceVisualization.prototype.refresh = function() {
       .data(vNodes, getNodeId)
     .enter().append("circle")
       .attr("class", "node")
-      .attr("r", 8)
+      .attr("r", 10)
       .attr('fill', getNodeColor)
+      .attr('stroke', getNodeStrokeColor)
       .call(forceLayout.drag)
       .on("mouseover", function(d, i){
         parameterToolTip

@@ -1,4 +1,4 @@
-/* asNEAT-visualizer 0.0.5 2014-04-01 */
+/* asNEAT-visualizer 0.0.5 2014-04-02 */
 define("asNEAT/asNEAT-visualizer", 
   ["asNEAT/visualization","asNEAT/forceVisualization","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
@@ -27,7 +27,6 @@ define("asNEAT/forceVisualization",
   ["exports"],
   function(__exports__) {
     "use strict";
-    
     var OscillatorNode = require('asNEAT/nodes/oscillatorNode')['default'],
         NoteOscillatorNode = require('asNEAT/nodes/noteOscillatorNode')['default'],
         OutNode = require('asNEAT/nodes/outNode')['default'],
@@ -71,11 +70,12 @@ define("asNEAT/forceVisualization",
         .attr("height", 500)
         .append("xhtml:body")
           .style({
-            "display": "none",
-            "font": "14px 'Helvetica Neue'",
-            "border-radius": "5px",
-            'background': "rgba(180, 180, 180, 0.9)",
-            'padding': "5px"
+            'display': 'none',
+            'font': "14px 'Helvetica Neue'",
+            'border-radius': '5px',
+            'background': 'rgba(180, 180, 180, 0.9)',
+            'margin': '10px',
+            'padding': '5px'
           });
     
       this.svg = svg;
@@ -326,12 +326,24 @@ define("asNEAT/forceVisualization",
     
     function buildParameterHtml(parameters) {
       return "<div>" +
+        "<b>"+parameters.name+"</b> ("+parameters.id+")<br>"+
         _.reduce(parameters, function(result, value, key) {
-          if (key==="name")
-            return result+"<b>"+value+"</b><br>";
-          return result+key+": "+value+"<br>";
+          if (key==="name" || key==="id")
+            return result;
+          return result+key+": "+
+            (_.isNumber(value) ?
+              (!isInteger(value) ?
+                value.toFixed(3) :
+                value) :
+              value ) +
+            "<br>";
         }, "") +
         "</div>";
+    }
+    
+    function isInteger(x) {
+      /*jshint -W018 */
+      return +x === x && !(x % 1);
     }
     
     function getCapitals(str) {

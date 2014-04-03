@@ -297,12 +297,24 @@ ForceVisualization.prototype.refresh = function() {
 
 function buildParameterHtml(parameters) {
   return "<div>" +
+    "<b>"+parameters.name+"</b> ("+parameters.id+")<br>"+
     _.reduce(parameters, function(result, value, key) {
-      if (key==="name")
-        return result+"<b>"+value+"</b><br>";
-      return result+key+": "+value+"<br>";
+      if (key==="name" || key==="id")
+        return result;
+      return result+key+": "+
+        (_.isNumber(value) ?
+          (!isInteger(value) ?
+            value.toFixed(3) :
+            value) :
+          value ) +
+        "<br>";
     }, "") +
     "</div>";
+}
+
+function isInteger(x) {
+  /*jshint -W018 */
+  return +x === x && !(x % 1);
 }
 
 function getCapitals(str) {

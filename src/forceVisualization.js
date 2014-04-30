@@ -68,31 +68,31 @@ var ForceVisualization = function(parameters) {
   .append("path")
     .attr("d", "M0,-5L10,0L0,5");
 
+  // Create a highlight filter that creates an
+  // orangish shadow under the element
   var hFilter = defs.append('filter')
     .attr('id', 'highlight')
     .attr('height', '200%')
     .attr('width', '200%')
     .attr('x', "-50%").attr('y', "-50%");
+  // Create the drop shadow's blur
   hFilter.append('feGaussianBlur')
     .attr('in', 'SourceAlpha')
     .attr("stdDeviation", 2)
     .attr('result', 'blur');
-  hFilter.append('feOffset')
-    .attr('in', 'blur')
-    .attr('dx', 0)
-    .attr('dy', 0)
-    .attr('result', 'offsetBlur');
+  // Force to a specific color
   hFilter.append('feColorMatrix')
-    .attr('in', 'offsetBlur')
+    .attr('in', 'blur')
     .attr('type', 'matrix')
-    //.attr('values', '0 0 0 1.5 0'+
-    //                '0 0 0 1.5 0'+
-    //                '0 0 0 0 0'+
-    //                '0 0 0 1.0 0')
-    .attr('result', 'coloredOffsetBlur');
+    // [[a1 b2 c3 d4]...[a5 b5 c5 d5]] * [r g b a 1]
+    // so if only using [d] it forces to that color
+    // and mult a by 4 for a bolder highlight
+    .attr('values', '0 0 0 0 1  0 0 0 0 0.522  0 0 0 0 0.106  0 0 0 4 0')
+    .attr('result', 'coloredBlur');
+  // Merge the original svg element and the new highlight blur
   var merge = hFilter.append('feMerge');
   merge.append('feMergeNode')
-    .attr('in', 'coloredOffsetBlur');
+    .attr('in', 'coloredBlur');
   merge.append('feMergeNode')
     .attr('in', 'SourceGraphic');
 

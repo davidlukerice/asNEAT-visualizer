@@ -1,4 +1,4 @@
-/* asNEAT-visualizer 0.0.5 2014-04-02 */
+/* asNEAT-visualizer 0.0.5 2014-04-30 */
 define("asNEAT/asNEAT-visualizer", 
   ["asNEAT/visualization","asNEAT/forceVisualization","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
@@ -82,7 +82,9 @@ define("asNEAT/forceVisualization",
       this.g = frontG;
     
       var color = {enabled:'black', disabled:'gray'};
-      frontG.append("defs").selectAll("marker")
+      var defs = frontG.append("defs");
+    
+      defs.selectAll("marker")
         .data(["enabled", "disabled"])
       .enter().append("marker")
         .attr("id", function(d) { return d; })
@@ -94,6 +96,34 @@ define("asNEAT/forceVisualization",
         .attr("orient", "auto")
       .append("path")
         .attr("d", "M0,-5L10,0L0,5");
+    
+      // Create a highlight filter that creates an
+      // orangish shadow under the element
+      var hFilter = defs.append('filter')
+        .attr('id', 'highlight')
+        .attr('height', '200%')
+        .attr('width', '200%')
+        .attr('x', "-50%").attr('y', "-50%");
+      // Create the drop shadow's blur
+      hFilter.append('feGaussianBlur')
+        .attr('in', 'SourceAlpha')
+        .attr("stdDeviation", 2)
+        .attr('result', 'blur');
+      // Force to a specific color
+      hFilter.append('feColorMatrix')
+        .attr('in', 'blur')
+        .attr('type', 'matrix')
+        // [[a1 b2 c3 d4]...[a5 b5 c5 d5]] * [r g b a 1]
+        // so if only using [d] it forces to that color
+        // and mult a by 4 for a bolder highlight
+        .attr('values', '0 0 0 0 1  0 0 0 0 0.522  0 0 0 0 0.106  0 0 0 4 0')
+        .attr('result', 'coloredBlur');
+      // Merge the original svg element and the new highlight blur
+      var merge = hFilter.append('feMerge');
+      merge.append('feMergeNode')
+        .attr('in', 'coloredBlur');
+      merge.append('feMergeNode')
+        .attr('in', 'SourceGraphic');
     
       this.vNodes = [];
       this.vConnections = [];
@@ -255,6 +285,15 @@ define("asNEAT/forceVisualization",
           ")";
       }
     
+      function getNodeFilter(node) {
+        return node.asNEATNode.hasChanged ?
+          "url(#highlight)" : "";
+      }
+      function getConnectionFilter(conn) {
+        return conn.asNEATConnection.hasChanged ?
+          "url(#highlight)" : "";
+      }
+    
       var forceLayout = this.forceLayout;
       forceLayout.size([rect.width, rect.height]);
       forceLayout.start();
@@ -263,10 +302,11 @@ define("asNEAT/forceVisualization",
         .data(vConnections, getConnectionId);
       
       connections.enter().append("path")
-        .attr('class', 'connection')
+        .attr('class', "connection")
         .style('stroke', getConnectionColor)
         .style('stroke-dasharray', getDashArray)
         .attr("marker-end", getMarker)
+        .attr('filter', getConnectionFilter)
         .on("mouseover", function(d, i){
           parameterToolTip
             .attr('x', (d.target.x+d.source.x)/2)
@@ -286,34 +326,40 @@ define("asNEAT/forceVisualization",
         .duration(animateSpeed)
         .style('stroke', getConnectionColor)
         .style('stroke-dasharray', getDashArray)
-        .attr("marker-end", getMarker);
+        .attr("marker-end", getMarker)
+        .attr('filter', getConnectionFilter);
     
       var parameterToolTip = this.svg.select('.parameterToolTip');
       var parameterToolTipHtml = parameterToolTip.select('body');
     
       var color = d3.scale.category20();
       var node = this.svg.select('.nodes').selectAll('.node')
-          .data(vNodes, getNodeId)
-        .enter().append("circle")
-          .attr("class", "node")
-          .attr("r", 10)
-          .attr('fill', getNodeColor)
-          .attr('stroke', getNodeStrokeColor)
-          .call(forceLayout.drag)
-          .on("mouseover", function(d, i){
-            parameterToolTip
-              .attr('x', d.x)
-              .attr('y', d.y);
-            var html = buildParameterHtml(d.asNEATNode.getParameters());
-            parameterToolTipHtml
-              .html(html)
-              .style("display", "inline-block");
-          })
-          .on("mouseout", function(d) {
-            parameterToolTipHtml
-              .html('')
-              .style("display", "none");
-          });
+        .data(vNodes, getNodeId);
+    
+      node.enter().append("circle")
+        .attr("class", "node")
+        .attr("r", 10)
+        .attr('fill', getNodeColor)
+        .attr('stroke', getNodeStrokeColor)
+        .attr('filter', getNodeFilter)
+        .call(forceLayout.drag)
+        .on("mouseover", function(d, i){
+          parameterToolTip
+            .attr('x', d.x)
+            .attr('y', d.y);
+          var html = buildParameterHtml(d.asNEATNode.getParameters());
+          parameterToolTipHtml
+            .html(html)
+            .style("display", "inline-block");
+        })
+        .on("mouseout", function(d) {
+          parameterToolTipHtml
+            .html('')
+            .style("display", "none");
+        });
+      node.transition()
+        .duration(animateSpeed)
+        .attr('filter', getNodeFilter);
     
       var labels = this.svg.select('.labels').selectAll('.label')
         .data(vNodes, getNodeId)

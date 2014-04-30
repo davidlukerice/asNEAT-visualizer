@@ -53,7 +53,9 @@ var ForceVisualization = function(parameters) {
   this.g = frontG;
 
   var color = {enabled:'black', disabled:'gray'};
-  frontG.append("defs").selectAll("marker")
+  var defs = frontG.append("defs");
+
+  defs.selectAll("marker")
     .data(["enabled", "disabled"])
   .enter().append("marker")
     .attr("id", function(d) { return d; })
@@ -65,6 +67,34 @@ var ForceVisualization = function(parameters) {
     .attr("orient", "auto")
   .append("path")
     .attr("d", "M0,-5L10,0L0,5");
+
+  var hFilter = defs.append('filter')
+    .attr('id', 'highlight')
+    .attr('height', '200%')
+    .attr('width', '200%')
+    .attr('x', "-50%").attr('y', "-50%");
+  hFilter.append('feGaussianBlur')
+    .attr('in', 'SourceAlpha')
+    .attr("stdDeviation", 2)
+    .attr('result', 'blur');
+  hFilter.append('feOffset')
+    .attr('in', 'blur')
+    .attr('dx', 0)
+    .attr('dy', 0)
+    .attr('result', 'offsetBlur');
+  hFilter.append('feColorMatrix')
+    .attr('in', 'offsetBlur')
+    .attr('type', 'matrix')
+    //.attr('values', '0 0 0 1.5 0'+
+    //                '0 0 0 1.5 0'+
+    //                '0 0 0 0 0'+
+    //                '0 0 0 1.0 0')
+    .attr('result', 'coloredOffsetBlur');
+  var merge = hFilter.append('feMerge');
+  merge.append('feMergeNode')
+    .attr('in', 'coloredOffsetBlur');
+  merge.append('feMergeNode')
+    .attr('in', 'SourceGraphic');
 
   this.vNodes = [];
   this.vConnections = [];
@@ -226,6 +256,15 @@ ForceVisualization.prototype.refresh = function() {
       ")";
   }
 
+  function getNodeFilter(node) {
+    return node.asNEATNode.hasChanged ?
+      "url(#highlight)" : "";
+  }
+  function getConnectionFilter(conn) {
+    return conn.asNEATConnection.hasChanged ?
+      "url(#highlight)" : "";
+  }
+
   var forceLayout = this.forceLayout;
   forceLayout.size([rect.width, rect.height]);
   forceLayout.start();
@@ -234,10 +273,11 @@ ForceVisualization.prototype.refresh = function() {
     .data(vConnections, getConnectionId);
   
   connections.enter().append("path")
-    .attr('class', 'connection')
+    .attr('class', "connection")
     .style('stroke', getConnectionColor)
     .style('stroke-dasharray', getDashArray)
     .attr("marker-end", getMarker)
+    .attr('filter', getConnectionFilter)
     .on("mouseover", function(d, i){
       parameterToolTip
         .attr('x', (d.target.x+d.source.x)/2)
@@ -257,34 +297,40 @@ ForceVisualization.prototype.refresh = function() {
     .duration(animateSpeed)
     .style('stroke', getConnectionColor)
     .style('stroke-dasharray', getDashArray)
-    .attr("marker-end", getMarker);
+    .attr("marker-end", getMarker)
+    .attr('filter', getConnectionFilter);
 
   var parameterToolTip = this.svg.select('.parameterToolTip');
   var parameterToolTipHtml = parameterToolTip.select('body');
 
   var color = d3.scale.category20();
   var node = this.svg.select('.nodes').selectAll('.node')
-      .data(vNodes, getNodeId)
-    .enter().append("circle")
-      .attr("class", "node")
-      .attr("r", 10)
-      .attr('fill', getNodeColor)
-      .attr('stroke', getNodeStrokeColor)
-      .call(forceLayout.drag)
-      .on("mouseover", function(d, i){
-        parameterToolTip
-          .attr('x', d.x)
-          .attr('y', d.y);
-        var html = buildParameterHtml(d.asNEATNode.getParameters());
-        parameterToolTipHtml
-          .html(html)
-          .style("display", "inline-block");
-      })
-      .on("mouseout", function(d) {
-        parameterToolTipHtml
-          .html('')
-          .style("display", "none");
-      });
+    .data(vNodes, getNodeId);
+
+  node.enter().append("circle")
+    .attr("class", "node")
+    .attr("r", 10)
+    .attr('fill', getNodeColor)
+    .attr('stroke', getNodeStrokeColor)
+    .attr('filter', getNodeFilter)
+    .call(forceLayout.drag)
+    .on("mouseover", function(d, i){
+      parameterToolTip
+        .attr('x', d.x)
+        .attr('y', d.y);
+      var html = buildParameterHtml(d.asNEATNode.getParameters());
+      parameterToolTipHtml
+        .html(html)
+        .style("display", "inline-block");
+    })
+    .on("mouseout", function(d) {
+      parameterToolTipHtml
+        .html('')
+        .style("display", "none");
+    });
+  node.transition()
+    .duration(animateSpeed)
+    .attr('filter', getNodeFilter);
 
   var labels = this.svg.select('.labels').selectAll('.label')
     .data(vNodes, getNodeId)

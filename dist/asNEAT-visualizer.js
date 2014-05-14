@@ -1,4 +1,4 @@
-/* asNEAT-visualizer 0.0.5 2014-04-30 */
+/* asNEAT-visualizer 0.1.0 2014-05-13 */
 define("asNEAT/asNEAT-visualizer", 
   ["asNEAT/visualization","asNEAT/forceVisualization","exports"],
   function(__dependency1__, __dependency2__, __exports__) {

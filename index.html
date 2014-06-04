@@ -15,6 +15,7 @@
 
     <script src="./vendor/jquery/dist/jquery.js"></script>
     <script src="./vendor/d3/d3.js"></script>
+    <script src="./vendor/chroma-js/chroma.min.js"></script>
     <script src="./vendor/lodash/dist/lodash.min.js"></script>
 
     <script src="./vendor/loader.js"></script>
@@ -34,6 +35,10 @@
 
     <br>
     <br>
+    <h2>Offline Spectrogram</h2>
+    <div class="offlineSpectrogram">
+    </div>
+
     <h2>Force Visualization</h2>
     <div class="forceNetwork">
     </div>
@@ -56,11 +61,13 @@
       !function() {
         var network,
             visualization,
-            forceVisualiza;
+            forceVisualization,
+            offlineSpectrogram;
 
         $(function() {
           var Utils = require('asNEAT/utils')['default'],
               log = Utils.log,
+              OfflineSpectrogram = require('asNEAT/offlineSpectrogram')['default'],
               Network = require('asNEAT/network')['default'],
               Visualizer = require('asNEAT/asNEAT-visualizer')['default'];
           network = new Network()
@@ -68,6 +75,10 @@
             .addOscillator()
             .splitMutation()
             .splitMutation();
+
+          offlineSpectrogram = Visualizer.createOfflineSpectrogram({
+            network: network
+          });
 
           forceVisualization = Visualizer.createForceVisualization({
             network: network
@@ -78,10 +89,10 @@
           });
 
           updateVisualization();
-          setupHandler();
+          setupHandlers();
         });
 
-        function setupHandler() {
+        function setupHandlers() {
           $('button.play').click(function() {
             network.play();
           });
@@ -113,7 +124,12 @@
         }
 
         function updateVisualization() {
+            // TODO: fix and uncomment?
             //visualization.refresh();
+
+            // TODO: update the vis' network?
+            //offlineSpectrogram.refresh();
+
             forceVisualization.refresh();
             $('.networkToString').html(network.toString());
           }

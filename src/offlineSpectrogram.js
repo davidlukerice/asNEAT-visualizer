@@ -1,21 +1,45 @@
 var asNEAT = require('asNEAT/asNEAT')['default'],
     context = asNEAT.context;
 
+// Workaround for garbageCollected jsNodes
+// http://sriku.org/blog/2013/01/30/taming-the-scriptprocessornode/#replacing-gain-node-with-scriptprocessornode
+var scriptNodes = {};
+var keep = (function() {
+  var nextNodeID = 1;
+  return function(node) {
+    node.id = node.id || (nextNodeID++);
+    scriptNodes[node.id] = node;
+    return node;
+  };
+}());
+var drop = function(node) {
+  delete scriptNodes[node.id];
+  return node;
+};
+
 var OfflineSpectrogram = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
   var self = this;
 
   var outNode = this.network.nodes[0];
-  var jsNode = context.createScriptProcessor(2048, 1, 1);
-
+  // TODO: Drop at some point?
+  var jsNode = keep(context.createScriptProcessor(2048, 1, 1));
+  jsNode.connect(context.destination);
+  
   var analyser = context.createAnalyser();
   analyser.smoothingTimeConstant = 0;
   analyser.fftSize = this.fftSize;
-  this.analyser = analyser;
 
   outNode.node.connect(analyser);
+  
+  //var n = context.createOscillator();
+  //n.frequency.value = 440;
+  //n.type = "sine";
+  //n.connect(analyser);
+  //n.start(0);
+
   analyser.connect(jsNode);
-  jsNode.connect(context.destination);
+  
 
   var canvas = document.createElement('canvas'),
       ctx = canvas.getContext('2d'),
@@ -34,16 +58,15 @@ var OfflineSpectrogram = function(parameters) {
   $(this.selector).append(canvas);
 
   jsNode.onaudioprocess = function() {
-    console.log('processing audio');
+    //console.log('processing audio');
     var array = new Uint8Array(analyser.frequencyBinCount);
     analyser.getByteFrequencyData(array);
-
 
     var isPlaying = _.reduce(self.network.getOscillatorNodes(), function(result, val) {
       return result || (val.node && val.node.playbackState === val.node.PLAYING_STATE);
     }, false);
 
-    if (isPlaying)
+    //if (isPlaying)
       self.refresh(array);
   };
 

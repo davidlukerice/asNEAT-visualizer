@@ -92,9 +92,15 @@
           setupHandlers();
         });
 
+        var stopFunc = null;
         function setupHandlers() {
-          $('button.play').click(function() {
-            network.play();
+          $('button.play').on('mousedown',function() {
+            if (stopFunc != null)
+              stopFunc();
+            stopFunc = network.playHold();
+          }).on('mouseup', function() {
+            stopFunc();
+            stopFunc = null;
           });
           $('button.splitMutate').click(function() {
             network.splitMutation();

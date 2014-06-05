@@ -31,15 +31,7 @@ var OfflineSpectrogram = function(parameters) {
   analyser.fftSize = this.fftSize;
 
   outNode.node.connect(analyser);
-  
-  //var n = context.createOscillator();
-  //n.frequency.value = 440;
-  //n.type = "sine";
-  //n.connect(analyser);
-  //n.start(0);
-
-  analyser.connect(jsNode);
-  
+  analyser.connect(jsNode);  
 
   var canvas = document.createElement('canvas'),
       ctx = canvas.getContext('2d'),
@@ -58,7 +50,7 @@ var OfflineSpectrogram = function(parameters) {
   $(this.selector).append(canvas);
 
   jsNode.onaudioprocess = function() {
-    //console.log('processing audio');
+
     var array = new Uint8Array(analyser.frequencyBinCount);
     analyser.getByteFrequencyData(array);
 
@@ -66,7 +58,7 @@ var OfflineSpectrogram = function(parameters) {
       return result || (val.node && val.node.playbackState === val.node.PLAYING_STATE);
     }, false);
 
-    //if (isPlaying)
+    if (isPlaying)
       self.refresh(array);
   };
 
@@ -107,7 +99,7 @@ OfflineSpectrogram.prototype.refresh = function(freqData) {
   tempCtx.drawImage(canvas, 0, 0, 800, 512);
   for (i=0,len = freqData.length; i<len; ++i) {
     val = freqData[i];
-    ctx.filStyle = colorScale(val).hex();
+    ctx.fillStyle = colorScale(val).hex();
     //console.log(val+' --> '+ctx.filStyle);
     ctx.fillRect(800-1, 512-i, 1, 1);
   }

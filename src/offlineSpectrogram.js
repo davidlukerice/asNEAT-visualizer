@@ -49,17 +49,31 @@ var OfflineSpectrogram = function(parameters) {
 
   $(this.selector).append(canvas);
 
+  var blankArray = new Uint8Array(analyser.frequencyBinCount),
+      lastSum = 0;
+
   jsNode.onaudioprocess = function() {
 
-    var array = new Uint8Array(analyser.frequencyBinCount);
-    analyser.getByteFrequencyData(array);
+    var freqData = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(freqData);
 
     var isPlaying = _.reduce(self.network.getOscillatorNodes(), function(result, val) {
       return result || (val.node && val.node.playbackState === val.node.PLAYING_STATE);
     }, false);
 
-    if (isPlaying)
-      self.refresh(array);
+    var sum = _.reduce(freqData, function(sum, val) {
+      return sum + val;
+    }, 0);
+
+    if (!isPlaying)
+      return;
+
+    if (sum===lastSum)
+      self.refresh(blankArray);
+    else
+      self.refresh(freqData);
+
+    lastSum = sum;
   };
 
   if (this.colorScale === null) {

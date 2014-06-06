@@ -36,8 +36,8 @@
 
     <br>
     <br>
-    <h2>Offline Spectrogram</h2>
-    <div class="offlineSpectrogram">
+    <h2>Live Spectrogram</h2>
+    <div class="liveSpectrogram">
     </div>
 
     <h2>Force Visualization</h2>
@@ -63,12 +63,11 @@
         var network,
             visualization,
             forceVisualization,
-            offlineSpectrogram;
+            liveSpectrogram;
 
         $(function() {
           var Utils = require('asNEAT/utils')['default'],
               log = Utils.log,
-              OfflineSpectrogram = require('asNEAT/offlineSpectrogram')['default'],
               Network = require('asNEAT/network')['default'],
               Visualizer = require('asNEAT/asNEAT-visualizer')['default'];
           network = new Network()
@@ -77,7 +76,7 @@
             .splitMutation()
             .splitMutation();
 
-          offlineSpectrogram = Visualizer.createOfflineSpectrogram({
+          liveSpectrogram = Visualizer.createLiveSpectrogram({
             network: network
           });
 
@@ -138,7 +137,7 @@
             //visualization.refresh();
 
             // TODO: update the vis' network?
-            //offlineSpectrogram.refresh();
+            //liveSpectrogram.refresh();
 
             forceVisualization.refresh();
             $('.networkToString').html(network.toString());

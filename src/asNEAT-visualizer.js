@@ -1,7 +1,7 @@
 
 import Visualization from 'asNEAT/visualization';
 import ForceVisualization from 'asNEAT/forceVisualization';
-import OfflineSpectrogram from 'asNEAT/offlineSpectrogram';
+import LiveSpectrogram from 'asNEAT/liveSpectrogram';
 var Visualizer = {};
 
 /*
@@ -15,8 +15,8 @@ Visualizer.createForceVisualization = function(parameters) {
   return new ForceVisualization(parameters);
 };
 
-Visualizer.createOfflineSpectrogram = function(parameters) {
-  return new OfflineSpectrogram(parameters);
+Visualizer.createLiveSpectrogram = function(parameters) {
+  return new LiveSpectrogram(parameters);
 };
 
 export default Visualizer;

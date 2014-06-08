@@ -118,10 +118,10 @@ ForceVisualization.prototype.start = function() {
   this.onResize = function() {
     self.refresh();
   };
-  $(window).on('resize', this.onresize);
+  $(window).on('resize', this.onResize);
 };
 ForceVisualization.prototype.stop = function() {
-  $(window).off('resize', this.onresize);
+  $(window).off('resize', this.onResize);
   $(this.selector + " svg").remove();
   this.forceLayout.alpha(0);
 };

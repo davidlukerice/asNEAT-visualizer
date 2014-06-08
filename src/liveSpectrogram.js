@@ -152,10 +152,6 @@ LiveSpectrogram.prototype.refresh = function() {
 
 };
 
-LiveSpectrogram.prototype.onResize = function() {
-
-};
-
 /**
   @param freqData {Uint8Array}
 */

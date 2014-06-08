@@ -3,8 +3,6 @@ var asNEAT = require('asNEAT/asNEAT')['default'],
 
 var MultiVisualization = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
-  var self = this;
-
   this.currentVisualization = this.visualizations[this.currentVisualizationIndex];
 };
 MultiVisualization.prototype.defaultParameters = {

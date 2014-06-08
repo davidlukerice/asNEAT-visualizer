@@ -164,6 +164,10 @@ LiveSpectrogram.prototype.updateCanvas = function(freqData) {
       bounds = this.getBounds(),
       i, len, val;
 
+  // See if the canvas even exists
+  if (typeof bounds === "undefined")
+    return;
+
   tempCtx.drawImage(canvas, 0, 0, bounds.width, bounds.height);
   for (i=0,len = freqData.length; i<len; ++i) {
     val = freqData[i];

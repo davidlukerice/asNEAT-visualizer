@@ -9,7 +9,7 @@ MultiVisualization.prototype.defaultParameters = {
   network: null,
   // (num) for px, or (string) for %
   width: "100%",
-  height: 512,
+  height: "100%",
   selector: '.multiVisualization',
   visualizations: [],
   currentVisualizationIndex: 0
@@ -17,7 +17,13 @@ MultiVisualization.prototype.defaultParameters = {
 
 MultiVisualization.prototype.init = function() {
   var self = this;
+  $(this.selector).css({
+    width: this.width,
+    height: this.height
+  });
   _.forEach(this.visualizations, function(vis) {
+    vis.width = self.width;
+    vis.height = self.height;
     vis.selector = self.selector; 
     vis.init();
   });

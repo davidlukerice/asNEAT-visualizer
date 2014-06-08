@@ -1,4 +1,4 @@
-/* asNEAT-visualizer 0.2.0 2014-06-07 */
+/* asNEAT-visualizer 0.2.0 2014-06-08 */
 define("asNEAT/asNEAT-visualizer", 
   ["asNEAT/multiVisualization","asNEAT/networkVisualization","asNEAT/forceVisualization","asNEAT/liveSpectrogram","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
@@ -704,6 +704,10 @@ define("asNEAT/liveSpectrogram",
           colorScale = this.colorScale,
           bounds = this.getBounds(),
           i, len, val;
+    
+      // See if the canvas even exists
+      if (typeof bounds === "undefined")
+        return;
     
       tempCtx.drawImage(canvas, 0, 0, bounds.width, bounds.height);
       for (i=0,len = freqData.length; i<len; ++i) {

@@ -86,7 +86,8 @@ var LiveSpectrogram = function(parameters) {
   clearCanvas();
 
   var blankArray = new Uint8Array(analyser.frequencyBinCount),
-      lastSum = 0;
+      lastSum = 0,
+      numRepeats = 0;
 
   jsNode.onaudioprocess = function() {
 
@@ -97,10 +98,19 @@ var LiveSpectrogram = function(parameters) {
       return sum + val;
     }, 0);
 
-    if (sum===lastSum)
-      self.refresh(blankArray);
-    else
-      self.refresh(freqData);
+    // Send blank data if the same sum has been used more than twice
+    if (sum===lastSum) {
+      ++numRepeats;
+      if (numRepeats >= 2) {
+        self.updateCanvas(blankArray);
+      }
+      else
+        self.updateCanvas(freqData);
+    }
+    else {
+      numRepeats = 0;
+      self.updateCanvas(freqData);
+    }
 
     lastSum = sum;
   };

@@ -1,14 +1,23 @@
 
-import Visualization from 'asNEAT/visualization';
+import MultiVisualization from 'asNEAT/multiVisualization';
+import NetworkVisualization from 'asNEAT/networkVisualization';
 import ForceVisualization from 'asNEAT/forceVisualization';
 import LiveSpectrogram from 'asNEAT/liveSpectrogram';
 var Visualizer = {};
 
-/*
-  @param network {asNEAT.Network}
-*/
-Visualizer.createVisualization = function(parameters) {
-  return new Visualization(parameters);
+Visualizer.createMultiVisualization = function(parameters) {
+
+  // TODO: Create other visualizations and pass them in
+  var visualizations = [];
+  visualizations.push(Visualizer.createLiveSpectrogram(parameters));
+  visualizations.push(Visualizer.createForceVisualization(parameters));
+  parameters.visualizations = visualizations;
+
+  return new MultiVisualization(parameters);
+};
+
+Visualizer.createNetworkVisualization = function(parameters) {
+  return new NetworkVisualization(parameters);
 };
 
 Visualizer.createForceVisualization = function(parameters) {

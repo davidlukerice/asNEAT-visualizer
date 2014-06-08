@@ -7,7 +7,23 @@ var OscillatorNode = require('asNEAT/nodes/oscillatorNode')['default'],
 
 var ForceVisualization = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
+};
+ForceVisualization.prototype.defaultParameters = {
+  network: null,
+  // (num) for px, or (string) for %
+  width: "100%",
+  height: 600,
+  selector: '.forceNetwork',
+  animateSpeed: 750
+};
 
+ForceVisualization.prototype.init = function() {
+  this.vNodes = [];
+  this.vConnections = [];
+  this.forceLayout = null;
+};
+
+ForceVisualization.prototype.start = function() {
   var self = this;
 
   var svg = d3.select(this.selector)
@@ -96,28 +112,18 @@ var ForceVisualization = function(parameters) {
   merge.append('feMergeNode')
     .attr('in', 'SourceGraphic');
 
-  this.vNodes = [];
-  this.vConnections = [];
-
-  this.forceLayout = null;
-
-  this.start();
+  this.startForceLayout();
   this.refresh();
 
-  var oldResize = window.onresize;
-  window.onresize = function() {
+  this.onResize = function() {
     self.refresh();
-    if (oldResize)
-      oldResize();
   };
+  $(window).on('resize', this.onresize);
 };
-ForceVisualization.prototype.defaultParameters = {
-  network: null,
-  // (num) for px, or (string) for %
-  width: "100%",
-  height: 600,
-  selector: '.forceNetwork',
-  animateSpeed: 750
+ForceVisualization.prototype.stop = function() {
+  $(window).off('resize', this.onresize);
+  $(this.selector + " svg").remove();
+  this.forceLayout.alpha(0);
 };
 
 /*
@@ -155,7 +161,7 @@ ForceVisualization.prototype.getRect = function() {
   return this.svg[0][0].getClientRects()[0];
 };
 
-ForceVisualization.prototype.start = function() {
+ForceVisualization.prototype.startForceLayout = function() {
   var svg = this.svg,
       vNodes = this.vNodes,
       vConnections = this.vConnections,

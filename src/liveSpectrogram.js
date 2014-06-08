@@ -19,31 +19,68 @@ var drop = function(node) {
 
 var LiveSpectrogram = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
-  var self = this;
+};
+LiveSpectrogram.prototype.defaultParameters = {
+  network: null,
+  // (num) for px, or (string) for %
+  width: "100%",
+  height: 512,
+  selector: '.liveSpectrogram',
 
-  var outNode = this.network.nodes[0];
-  // TODO: Drop at some point?
-  var jsNode = keep(context.createScriptProcessor(2048, 1, 1));
-  jsNode.connect(context.destination);
-  
-  var analyser = context.createAnalyser();
-  analyser.smoothingTimeConstant = 0;
-  analyser.fftSize = this.fftSize;
+  // number of frequency bands in the y direction
+  // TODO: Update based on height*2?
+  fftSize: 1024,
 
-  outNode.node.connect(analyser);
-  analyser.connect(jsNode);  
+  // the colors used in the vis
+  colorScaleColors: ['#000000', '#ff0000', '#ffff00', '#ffffff'],
+  colorScalePositions: [0, 0.25, 0.75, 1]
+};
 
+LiveSpectrogram.prototype.init = function() {
   var canvas = document.createElement('canvas'),
       ctx = canvas.getContext('2d'),
       tempCanvas = document.createElement('canvas'),
-      tempCtx = tempCanvas.getContext('2d'),
-      $canvas = $(canvas),
-      $tempCanvas = $(tempCanvas);
+      tempCtx = tempCanvas.getContext('2d');
   this.canvas = canvas;
   this.ctx = ctx;
   this.tempCanvas = tempCanvas;
   this.tempCtx = tempCtx;
-  $(this.selector).append(canvas);
+
+  this.$canvas = $(canvas);
+  this.$tempCanvas = $(tempCanvas);
+
+  this.colorScale = new chroma.scale(
+    this.colorScaleColors,
+    this.colorScalePositions);
+  this.colorScale.domain([0, 300]);
+
+  this.outNode = this.network.nodes[0];
+};
+
+LiveSpectrogram.prototype.start = function() {
+  var self = this,
+      canvas = this.canvas,
+      ctx = this.ctx,
+      tempCanvas = this.tempCanvas,
+      tempCtx = this.tempCtx,
+      $canvas = this.$canvas,
+      $tempCanvas = this.$tempCanvas,
+      outNode = this.outNode,
+      jsNode, analyserNode;
+
+  jsNode = keep(context.createScriptProcessor(2048, 1, 1));
+  jsNode.connect(context.destination);
+  this.jsNode = jsNode;
+
+  analyserNode = context.createAnalyser();
+  analyserNode.smoothingTimeConstant = 0;
+  analyserNode.fftSize = this.fftSize;
+  this.analyserNode = analyserNode;
+
+  outNode.node.connect(analyserNode);
+  analyserNode.connect(jsNode);
+
+  $(this.selector).append($canvas);
 
   $canvas.css({
     width: this.width,
@@ -54,45 +91,32 @@ var LiveSpectrogram = function(parameters) {
     height: this.height
   });
 
-  var bounds = this.getBounds();
-  canvas.width = bounds.width;
-  canvas.height = bounds.height;
-  tempCanvas.width = bounds.width;
-  tempCanvas.height = bounds.height;
-
-  var oldResize = window.onresize;
-  window.onresize = function() {
+  this.onResize = function() {
     // TODO: Scale/Copy old canvas into new resized one
-    bounds = self.getBounds();
+    var bounds = self.getBounds();
     canvas.width = bounds.width;
     canvas.height = bounds.height;
     tempCanvas.width = bounds.width;
     tempCanvas.height = bounds.height;
     clearCanvas();
-
-    if (oldResize)
-      oldResize();
   };
-
-  this.colorScale = new chroma.scale(
-    this.colorScaleColors,
-    this.colorScalePositions);
-  this.colorScale.domain([0, 300]);
+  $(window).on('resize', this.onResize);
+  this.onResize();
 
   function clearCanvas() {
+    var bounds = self.getBounds();
     ctx.fillStyle=self.colorScale(0).hex();
     ctx.fillRect(0,0,bounds.width,bounds.height);
   }
-  clearCanvas();
 
-  var blankArray = new Uint8Array(analyser.frequencyBinCount),
+  var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
       lastSum = 0,
       numRepeats = 0;
 
   jsNode.onaudioprocess = function() {
 
-    var freqData = new Uint8Array(analyser.frequencyBinCount);
-    analyser.getByteFrequencyData(freqData);
+    var freqData = new Uint8Array(analyserNode.frequencyBinCount);
+    analyserNode.getByteFrequencyData(freqData);
 
     var sum = _.reduce(freqData, function(sum, val) {
       return sum + val;
@@ -115,26 +139,27 @@ var LiveSpectrogram = function(parameters) {
     lastSum = sum;
   };
 };
-LiveSpectrogram.prototype.defaultParameters = {
-  network: null,
-  // (num) for px, or (string) for %
-  width: "100%",
-  height: 512,
-  selector: '.liveSpectrogram',
 
-  // number of frequency bands in the y direction
-  // TODO: Update based on height*2?
-  fftSize: 1024,
+LiveSpectrogram.prototype.stop = function() {
+  this.$canvas.remove();
+  $(window).off('resize', this.onResize);
+  this.jsNode.disconnect(context.destination);
+  this.analyserNode.disconnect(this.jsNode);
+  drop(this.jsNode);
+};
 
-  // the colors used in the vis
-  colorScaleColors: ['#000000', '#ff0000', '#ffff00', '#ffffff'],
-  colorScalePositions: [0, 0.25, 0.75, 1]
+LiveSpectrogram.prototype.refresh = function() {
+
+};
+
+LiveSpectrogram.prototype.onResize = function() {
+
 };
 
 /**
   @param freqData {Uint8Array}
 */
-LiveSpectrogram.prototype.refresh = function(freqData) {
+LiveSpectrogram.prototype.updateCanvas = function(freqData) {
   var canvas = this.canvas,
       tempCanvas = this.tempCanvas,
       tempCtx = this.tempCtx,

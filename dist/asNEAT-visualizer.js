@@ -1,22 +1,32 @@
-/* asNEAT-visualizer 0.1.0 2014-06-06 */
+/* asNEAT-visualizer 0.1.0 2014-06-07 */
 define("asNEAT/asNEAT-visualizer", 
-  ["asNEAT/visualization","asNEAT/forceVisualization","asNEAT/liveSpectrogram","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+  ["asNEAT/multiVisualization","asNEAT/networkVisualization","asNEAT/forceVisualization","asNEAT/liveSpectrogram","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
     
-    var Visualization = __dependency1__["default"];
+    var MultiVisualization = __dependency1__["default"];
 
-    var ForceVisualization = __dependency2__["default"];
+    var NetworkVisualization = __dependency2__["default"];
 
-    var LiveSpectrogram = __dependency3__["default"];
+    var ForceVisualization = __dependency3__["default"];
+
+    var LiveSpectrogram = __dependency4__["default"];
 
     var Visualizer = {};
     
-    /*
-      @param network {asNEAT.Network}
-    */
-    Visualizer.createVisualization = function(parameters) {
-      return new Visualization(parameters);
+    Visualizer.createMultiVisualization = function(parameters) {
+    
+      // TODO: Create other visualizations and pass them in
+      var visualizations = [];
+      visualizations.push(Visualizer.createLiveSpectrogram(parameters));
+      visualizations.push(Visualizer.createForceVisualization(parameters));
+      parameters.visualizations = visualizations;
+    
+      return new MultiVisualization(parameters);
+    };
+    
+    Visualizer.createNetworkVisualization = function(parameters) {
+      return new NetworkVisualization(parameters);
     };
     
     Visualizer.createForceVisualization = function(parameters) {
@@ -42,7 +52,23 @@ define("asNEAT/forceVisualization",
     
     var ForceVisualization = function(parameters) {
       _.defaults(this, parameters, this.defaultParameters);
+    };
+    ForceVisualization.prototype.defaultParameters = {
+      network: null,
+      // (num) for px, or (string) for %
+      width: "100%",
+      height: 600,
+      selector: '.forceNetwork',
+      animateSpeed: 750
+    };
     
+    ForceVisualization.prototype.init = function() {
+      this.vNodes = [];
+      this.vConnections = [];
+      this.forceLayout = null;
+    };
+    
+    ForceVisualization.prototype.start = function() {
       var self = this;
     
       var svg = d3.select(this.selector)
@@ -131,28 +157,18 @@ define("asNEAT/forceVisualization",
       merge.append('feMergeNode')
         .attr('in', 'SourceGraphic');
     
-      this.vNodes = [];
-      this.vConnections = [];
-    
-      this.forceLayout = null;
-    
-      this.start();
+      this.startForceLayout();
       this.refresh();
     
-      var oldResize = window.onresize;
-      window.onresize = function() {
+      this.onResize = function() {
         self.refresh();
-        if (oldResize)
-          oldResize();
       };
+      $(window).on('resize', this.onresize);
     };
-    ForceVisualization.prototype.defaultParameters = {
-      network: null,
-      // (num) for px, or (string) for %
-      width: "100%",
-      height: 600,
-      selector: '.forceNetwork',
-      animateSpeed: 750
+    ForceVisualization.prototype.stop = function() {
+      $(window).off('resize', this.onresize);
+      $(this.selector + " svg").remove();
+      this.forceLayout.alpha(0);
     };
     
     /*
@@ -190,7 +206,7 @@ define("asNEAT/forceVisualization",
       return this.svg[0][0].getClientRects()[0];
     };
     
-    ForceVisualization.prototype.start = function() {
+    ForceVisualization.prototype.startForceLayout = function() {
       var svg = this.svg,
           vNodes = this.vNodes,
           vConnections = this.vConnections,
@@ -544,91 +560,6 @@ define("asNEAT/liveSpectrogram",
     
     var LiveSpectrogram = function(parameters) {
       _.defaults(this, parameters, this.defaultParameters);
-      var self = this;
-    
-      var outNode = this.network.nodes[0];
-      // TODO: Drop at some point?
-      var jsNode = keep(context.createScriptProcessor(2048, 1, 1));
-      jsNode.connect(context.destination);
-      
-      var analyser = context.createAnalyser();
-      analyser.smoothingTimeConstant = 0;
-      analyser.fftSize = this.fftSize;
-    
-      outNode.node.connect(analyser);
-      analyser.connect(jsNode);  
-    
-      var canvas = document.createElement('canvas'),
-          ctx = canvas.getContext('2d'),
-          tempCanvas = document.createElement('canvas'),
-          tempCtx = tempCanvas.getContext('2d'),
-          $canvas = $(canvas),
-          $tempCanvas = $(tempCanvas);
-      this.canvas = canvas;
-      this.ctx = ctx;
-      this.tempCanvas = tempCanvas;
-      this.tempCtx = tempCtx;
-      $(this.selector).append(canvas);
-    
-      $canvas.css({
-        width: this.width,
-        height: this.height
-      });
-      $tempCanvas.css({
-        width: this.width,
-        height: this.height
-      });
-    
-      var bounds = this.getBounds();
-      canvas.width = bounds.width;
-      canvas.height = bounds.height;
-      tempCanvas.width = bounds.width;
-      tempCanvas.height = bounds.height;
-    
-      var oldResize = window.onresize;
-      window.onresize = function() {
-        // TODO: Scale/Copy old canvas into new resized one
-        bounds = self.getBounds();
-        canvas.width = bounds.width;
-        canvas.height = bounds.height;
-        tempCanvas.width = bounds.width;
-        tempCanvas.height = bounds.height;
-        clearCanvas();
-    
-        if (oldResize)
-          oldResize();
-      };
-    
-      this.colorScale = new chroma.scale(
-        this.colorScaleColors,
-        this.colorScalePositions);
-      this.colorScale.domain([0, 300]);
-    
-      function clearCanvas() {
-        ctx.fillStyle=self.colorScale(0).hex();
-        ctx.fillRect(0,0,bounds.width,bounds.height);
-      }
-      clearCanvas();
-    
-      var blankArray = new Uint8Array(analyser.frequencyBinCount),
-          lastSum = 0;
-    
-      jsNode.onaudioprocess = function() {
-    
-        var freqData = new Uint8Array(analyser.frequencyBinCount);
-        analyser.getByteFrequencyData(freqData);
-    
-        var sum = _.reduce(freqData, function(sum, val) {
-          return sum + val;
-        }, 0);
-    
-        if (sum===lastSum)
-          self.refresh(blankArray);
-        else
-          self.refresh(freqData);
-    
-        lastSum = sum;
-      };
     };
     LiveSpectrogram.prototype.defaultParameters = {
       network: null,
@@ -646,10 +577,130 @@ define("asNEAT/liveSpectrogram",
       colorScalePositions: [0, 0.25, 0.75, 1]
     };
     
+    LiveSpectrogram.prototype.init = function() {
+      var canvas = document.createElement('canvas'),
+          ctx = canvas.getContext('2d'),
+          tempCanvas = document.createElement('canvas'),
+          tempCtx = tempCanvas.getContext('2d');
+      this.canvas = canvas;
+      this.ctx = ctx;
+      this.tempCanvas = tempCanvas;
+      this.tempCtx = tempCtx;
+    
+      this.$canvas = $(canvas);
+      this.$tempCanvas = $(tempCanvas);
+    
+      this.colorScale = new chroma.scale(
+        this.colorScaleColors,
+        this.colorScalePositions);
+      this.colorScale.domain([0, 300]);
+    
+      this.outNode = this.network.nodes[0];
+    };
+    
+    LiveSpectrogram.prototype.start = function() {
+      var self = this,
+          canvas = this.canvas,
+          ctx = this.ctx,
+          tempCanvas = this.tempCanvas,
+          tempCtx = this.tempCtx,
+          $canvas = this.$canvas,
+          $tempCanvas = this.$tempCanvas,
+          outNode = this.outNode,
+          jsNode, analyserNode;
+    
+      jsNode = keep(context.createScriptProcessor(2048, 1, 1));
+      jsNode.connect(context.destination);
+      this.jsNode = jsNode;
+    
+      analyserNode = context.createAnalyser();
+      analyserNode.smoothingTimeConstant = 0;
+      analyserNode.fftSize = this.fftSize;
+      this.analyserNode = analyserNode;
+    
+      outNode.node.connect(analyserNode);
+      analyserNode.connect(jsNode);
+    
+      $(this.selector).append($canvas);
+    
+      $canvas.css({
+        width: this.width,
+        height: this.height
+      });
+      $tempCanvas.css({
+        width: this.width,
+        height: this.height
+      });
+    
+      this.onResize = function() {
+        // TODO: Scale/Copy old canvas into new resized one
+        var bounds = self.getBounds();
+        canvas.width = bounds.width;
+        canvas.height = bounds.height;
+        tempCanvas.width = bounds.width;
+        tempCanvas.height = bounds.height;
+        clearCanvas();
+      };
+      $(window).on('resize', this.onResize);
+      this.onResize();
+    
+      function clearCanvas() {
+        var bounds = self.getBounds();
+        ctx.fillStyle=self.colorScale(0).hex();
+        ctx.fillRect(0,0,bounds.width,bounds.height);
+      }
+    
+      var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
+          lastSum = 0,
+          numRepeats = 0;
+    
+      jsNode.onaudioprocess = function() {
+    
+        var freqData = new Uint8Array(analyserNode.frequencyBinCount);
+        analyserNode.getByteFrequencyData(freqData);
+    
+        var sum = _.reduce(freqData, function(sum, val) {
+          return sum + val;
+        }, 0);
+    
+        // Send blank data if the same sum has been used more than twice
+        if (sum===lastSum) {
+          ++numRepeats;
+          if (numRepeats >= 2) {
+            self.updateCanvas(blankArray);
+          }
+          else
+            self.updateCanvas(freqData);
+        }
+        else {
+          numRepeats = 0;
+          self.updateCanvas(freqData);
+        }
+    
+        lastSum = sum;
+      };
+    };
+    
+    LiveSpectrogram.prototype.stop = function() {
+      this.$canvas.remove();
+      $(window).off('resize', this.onResize);
+      this.jsNode.disconnect(context.destination);
+      this.analyserNode.disconnect(this.jsNode);
+      drop(this.jsNode);
+    };
+    
+    LiveSpectrogram.prototype.refresh = function() {
+    
+    };
+    
+    LiveSpectrogram.prototype.onResize = function() {
+    
+    };
+    
     /**
       @param freqData {Uint8Array}
     */
-    LiveSpectrogram.prototype.refresh = function(freqData) {
+    LiveSpectrogram.prototype.updateCanvas = function(freqData) {
       var canvas = this.canvas,
           tempCanvas = this.tempCanvas,
           tempCtx = this.tempCtx,
@@ -677,72 +728,60 @@ define("asNEAT/liveSpectrogram",
     
     __exports__["default"] = LiveSpectrogram;
   });
-define("asNEAT/vConnection", 
+define("asNEAT/multiVisualization", 
   ["exports"],
   function(__exports__) {
     "use strict";
-    var VConnection = function(parameters) {
+    var asNEAT = require('asNEAT/asNEAT')['default'],
+        context = asNEAT.context;
+    
+    var MultiVisualization = function(parameters) {
       _.defaults(this, parameters, this.defaultParameters);
-    };
-    VConnection.prototype.defaultParameters = {
-      inVNode: null,
-      outVNode: null,
-      
-      //indexes in the nodes array
-      source: 0,
-      target: 1,
+      var self = this;
     
-      asNEATConnection: null
+      this.currentVisualization = this.visualizations[this.currentVisualizationIndex];
     };
-    
-    __exports__["default"] = VConnection;
-  });
-define("asNEAT/vNode", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    var VNode = function(parameters) {
-      _.defaults(this, parameters, this.defaultParameters);
-    };
-    VNode.prototype.defaultParameters = {
-      numHops: 0,
-      longestPath: null,
-      yIndex: 0,
-      hashElement: null,
-      asNEATNode: null
-    };
-    VNode.prototype.cleanParameters = function() {
-      this.numHops = 0;
-      this.longestPath = null;
-      this.yIndex = 0;
-      this.hashElement = null;
-    };
-    VNode.prototype.getLongestPathLength = function() {
-      return this.longestPath ? this.longestPath.getLength() : 1;
-    };
-    VNode.prototype.getNumberNodesInHash = function() {
-      return this.hashElement ? this.hashElement.value : 1;
-    };
-    VNode.prototype.getLocalX = function() {
-      return (1-this.numHops/this.getLongestPathLength());
-    };
-    VNode.prototype.getLocalY = function() {
-      return (this.yIndex+1)/(this.getNumberNodesInHash()+1);
-    };
-    VNode.prototype.getLabel = function() {
-      return '('+this.numHops+"/"+this.getLongestPathLength()+
-            ', '+this.yIndex+'/'+this.getNumberNodesInHash()+')';
+    MultiVisualization.prototype.defaultParameters = {
+      network: null,
+      // (num) for px, or (string) for %
+      width: "100%",
+      height: 512,
+      selector: '.multiVisualization',
+      visualizations: [],
+      currentVisualizationIndex: 0
     };
     
-    VNode.createVNodeFrom = function(asNEATNode) {
-      return new VNode({
-        asNEATNode: asNEATNode
+    MultiVisualization.prototype.init = function() {
+      var self = this;
+      _.forEach(this.visualizations, function(vis) {
+        vis.selector = self.selector; 
+        vis.init();
       });
     };
     
-    __exports__["default"] = VNode;
+    MultiVisualization.prototype.start = function() {
+      this.currentVisualization.start();
+    };
+    
+    MultiVisualization.prototype.stop = function() {
+      this.currentVisualization.stop();
+    };
+    
+    MultiVisualization.prototype.refresh = function() {
+      this.currentVisualization.refresh();
+    };
+    
+    MultiVisualization.prototype.nextVisualization = function() {
+      this.currentVisualization.stop();
+      this.currentVisualizationIndex = (this.currentVisualizationIndex+1)%
+                                          this.visualizations.length;
+      this.currentVisualization = this.visualizations[this.currentVisualizationIndex];
+      this.currentVisualization.start();
+    };
+    
+    __exports__["default"] = MultiVisualization;
   });
-define("asNEAT/visualization", 
+define("asNEAT/networkVisualization", 
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -754,7 +793,7 @@ define("asNEAT/visualization",
         VConnection = require('asNEAT/vConnection')['default'],
         Graph = require('asNEAT/graph')['default'];
     
-    var Visualization = function(parameters) {
+    var NetworkVisualization = function(parameters) {
       _.defaults(this, parameters, this.defaultParameters);
     
       var svg = d3.select(this.selector).append('svg')
@@ -778,7 +817,7 @@ define("asNEAT/visualization",
           oldResize();
       };
     };
-    Visualization.prototype.defaultParameters = {
+    NetworkVisualization.prototype.defaultParameters = {
       network: null,
       // (num) for px, or (string) for %
       width: "100%",
@@ -792,7 +831,7 @@ define("asNEAT/visualization",
     /*
       creates a representation of each node/connection in the network to be shown
      **/
-    Visualization.prototype.updateVisualizationNetwork = function() {
+    NetworkVisualization.prototype.updateVisualizationNetwork = function() {
       
       var nodes = this.vNodes,
           connections = this.vConnections;
@@ -820,7 +859,7 @@ define("asNEAT/visualization",
       Graph.longestPath(nodes, connections);
     };
     
-    Visualization.prototype.refresh = function() {
+    NetworkVisualization.prototype.refresh = function() {
       var vNodes = this.vNodes,
           vConnections = this.vConnections,
           rects = this.svg[0][0].getClientRects()[0],
@@ -950,5 +989,70 @@ define("asNEAT/visualization",
     
     };
     
-    __exports__["default"] = Visualization;
+    __exports__["default"] = NetworkVisualization;
+  });
+define("asNEAT/vConnection", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var VConnection = function(parameters) {
+      _.defaults(this, parameters, this.defaultParameters);
+    };
+    VConnection.prototype.defaultParameters = {
+      inVNode: null,
+      outVNode: null,
+      
+      //indexes in the nodes array
+      source: 0,
+      target: 1,
+    
+      asNEATConnection: null
+    };
+    
+    __exports__["default"] = VConnection;
+  });
+define("asNEAT/vNode", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var VNode = function(parameters) {
+      _.defaults(this, parameters, this.defaultParameters);
+    };
+    VNode.prototype.defaultParameters = {
+      numHops: 0,
+      longestPath: null,
+      yIndex: 0,
+      hashElement: null,
+      asNEATNode: null
+    };
+    VNode.prototype.cleanParameters = function() {
+      this.numHops = 0;
+      this.longestPath = null;
+      this.yIndex = 0;
+      this.hashElement = null;
+    };
+    VNode.prototype.getLongestPathLength = function() {
+      return this.longestPath ? this.longestPath.getLength() : 1;
+    };
+    VNode.prototype.getNumberNodesInHash = function() {
+      return this.hashElement ? this.hashElement.value : 1;
+    };
+    VNode.prototype.getLocalX = function() {
+      return (1-this.numHops/this.getLongestPathLength());
+    };
+    VNode.prototype.getLocalY = function() {
+      return (this.yIndex+1)/(this.getNumberNodesInHash()+1);
+    };
+    VNode.prototype.getLabel = function() {
+      return '('+this.numHops+"/"+this.getLongestPathLength()+
+            ', '+this.yIndex+'/'+this.getNumberNodesInHash()+')';
+    };
+    
+    VNode.createVNodeFrom = function(asNEATNode) {
+      return new VNode({
+        asNEATNode: asNEATNode
+      });
+    };
+    
+    __exports__["default"] = VNode;
   });

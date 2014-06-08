@@ -6,7 +6,7 @@ var OscillatorNode = require('asNEAT/nodes/oscillatorNode')['default'],
     VConnection = require('asNEAT/vConnection')['default'],
     Graph = require('asNEAT/graph')['default'];
 
-var Visualization = function(parameters) {
+var NetworkVisualization = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
 
   var svg = d3.select(this.selector).append('svg')
@@ -30,7 +30,7 @@ var Visualization = function(parameters) {
       oldResize();
   };
 };
-Visualization.prototype.defaultParameters = {
+NetworkVisualization.prototype.defaultParameters = {
   network: null,
   // (num) for px, or (string) for %
   width: "100%",
@@ -44,7 +44,7 @@ Visualization.prototype.defaultParameters = {
 /*
   creates a representation of each node/connection in the network to be shown
  **/
-Visualization.prototype.updateVisualizationNetwork = function() {
+NetworkVisualization.prototype.updateVisualizationNetwork = function() {
   
   var nodes = this.vNodes,
       connections = this.vConnections;
@@ -72,7 +72,7 @@ Visualization.prototype.updateVisualizationNetwork = function() {
   Graph.longestPath(nodes, connections);
 };
 
-Visualization.prototype.refresh = function() {
+NetworkVisualization.prototype.refresh = function() {
   var vNodes = this.vNodes,
       vConnections = this.vConnections,
       rects = this.svg[0][0].getClientRects()[0],
@@ -202,4 +202,4 @@ Visualization.prototype.refresh = function() {
 
 };
 
-export default Visualization;
+export default NetworkVisualization;

@@ -1,4 +1,4 @@
-/* asNEAT-visualizer 0.1.0 2014-06-07 */
+/* asNEAT-visualizer 0.2.0 2014-06-07 */
 define("asNEAT/asNEAT-visualizer", 
   ["asNEAT/multiVisualization","asNEAT/networkVisualization","asNEAT/forceVisualization","asNEAT/liveSpectrogram","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
@@ -163,10 +163,10 @@ define("asNEAT/forceVisualization",
       this.onResize = function() {
         self.refresh();
       };
-      $(window).on('resize', this.onresize);
+      $(window).on('resize', this.onResize);
     };
     ForceVisualization.prototype.stop = function() {
-      $(window).off('resize', this.onresize);
+      $(window).off('resize', this.onResize);
       $(this.selector + " svg").remove();
       this.forceLayout.alpha(0);
     };
@@ -693,10 +693,6 @@ define("asNEAT/liveSpectrogram",
     
     };
     
-    LiveSpectrogram.prototype.onResize = function() {
-    
-    };
-    
     /**
       @param freqData {Uint8Array}
     */
@@ -737,8 +733,6 @@ define("asNEAT/multiVisualization",
     
     var MultiVisualization = function(parameters) {
       _.defaults(this, parameters, this.defaultParameters);
-      var self = this;
-    
       this.currentVisualization = this.visualizations[this.currentVisualizationIndex];
     };
     MultiVisualization.prototype.defaultParameters = {

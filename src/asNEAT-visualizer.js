@@ -2,6 +2,7 @@
 import MultiVisualization from 'asNEAT/multiVisualization';
 import NetworkVisualization from 'asNEAT/networkVisualization';
 import ForceVisualization from 'asNEAT/forceVisualization';
+import OfflineSpectrogram from 'asNEAT/offlineSpectrogram';
 import LiveSpectrogram from 'asNEAT/liveSpectrogram';
 var Visualizer = {};
 
@@ -22,6 +23,10 @@ Visualizer.createNetworkVisualization = function(parameters) {
 
 Visualizer.createForceVisualization = function(parameters) {
   return new ForceVisualization(parameters);
+};
+
+Visualizer.creatOfflineSpectrogram = function(parameters) {
+	return new OfflineSpectrogram(parameters);
 };
 
 Visualizer.createLiveSpectrogram = function(parameters) {

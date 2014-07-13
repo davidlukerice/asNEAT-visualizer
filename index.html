@@ -36,6 +36,12 @@
 
     <br>
     <br>
+
+    <h2>Offline Spectrogram</h2>
+    <div class="offlineSpectrogram">
+    </div>
+
+
     <h2>Multi Visualization</h2>
     <button class="nextVisualization">Next Visualization</button><br>
     <div class="multiVisualizationContainer" style="width:500px;height:500px;">
@@ -66,6 +72,7 @@
         var network,
             multiVisualization,
             forceVisualization,
+            offlineSpectrogram,
             liveSpectrogram;
 
         $(function() {
@@ -84,6 +91,12 @@
           });
           multiVisualization.init();
           multiVisualization.start();
+
+          offlineSpectrogram = Visualizer.createOfflineSpectrogram({
+            network: network
+          });
+          offlineSpectrogram.init();
+          offlineSpectrogram.start();
 
           liveSpectrogram = Visualizer.createLiveSpectrogram({
             network: network
@@ -150,7 +163,7 @@
             //liveSpectrogram.refresh();
 
             multiVisualization.refresh();
-
+            
             forceVisualization.refresh();
             $('.networkToString').html(network.toString());
           }

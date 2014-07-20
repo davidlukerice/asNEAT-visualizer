@@ -1,5 +1,5 @@
 var asNEAT = require('asNEAT/asNEAT')['default'],
-    context = asNEAT.context;
+    context = asNEAT.offlineContext;
 
 // Workaround for garbageCollected jsNodes
 // http://sriku.org/blog/2013/01/30/taming-the-scriptprocessornode/#replacing-gain-node-with-scriptprocessornode
@@ -37,7 +37,6 @@ OfflineSpectrogram.prototype.defaultParameters = {
 };
 
 OfflineSpectrogram.prototype.init = function() {
-  /*
   var canvas = document.createElement('canvas'),
       ctx = canvas.getContext('2d'),
       tempCanvas = document.createElement('canvas'),
@@ -56,11 +55,9 @@ OfflineSpectrogram.prototype.init = function() {
   this.colorScale.domain([0, 300]);
 
   this.outNode = this.network.nodes[0];
-  */
 };
 
 OfflineSpectrogram.prototype.start = function() {
-  /*
   var self = this,
       canvas = this.canvas,
       ctx = this.ctx,
@@ -80,7 +77,7 @@ OfflineSpectrogram.prototype.start = function() {
   analyserNode.fftSize = this.fftSize;
   this.analyserNode = analyserNode;
 
-  outNode.node.connect(analyserNode);
+  outNode.offlineNode.connect(analyserNode);
   analyserNode.connect(jsNode);
 
   $(this.selector).append($canvas);
@@ -141,17 +138,16 @@ OfflineSpectrogram.prototype.start = function() {
 
     lastSum = sum;
   };
-  */
+
+  this.network.offlinePlay();
 };
 
 OfflineSpectrogram.prototype.stop = function() {
-  /*
   this.$canvas.remove();
   $(window).off('resize', this.onResize);
   this.jsNode.disconnect(context.destination);
   this.analyserNode.disconnect(this.jsNode);
   drop(this.jsNode);
-  */
 };
 
 OfflineSpectrogram.prototype.refresh = function() {
@@ -162,7 +158,6 @@ OfflineSpectrogram.prototype.refresh = function() {
   @param freqData {Uint8Array}
 */
 OfflineSpectrogram.prototype.updateCanvas = function(freqData) {
-  /*
   var canvas = this.canvas,
       tempCanvas = this.tempCanvas,
       tempCtx = this.tempCtx,
@@ -186,11 +181,10 @@ OfflineSpectrogram.prototype.updateCanvas = function(freqData) {
   ctx.drawImage(tempCanvas, 0, 0, bounds.width, bounds.height,
                             0, 0, bounds.width, bounds.height);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  */
 };
-/*
+
 OfflineSpectrogram.prototype.getBounds = function() {
   return this.canvas.getClientRects()[0];
-};*/
+};
 
 export default OfflineSpectrogram;

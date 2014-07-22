@@ -55,7 +55,8 @@ module.exports = function(grunt) {
 
     concat: {
       options: {
-        banner: banner
+        banner: banner,
+        sourceMap: true
       },
       dist: {
         src: ['tmp/transpiled/**/*.js'],
@@ -65,7 +66,8 @@ module.exports = function(grunt) {
 
     uglify: {
       options: {
-        banner: banner
+        banner: banner,
+        sourceMap: true
       },
       dist: {
         files: {

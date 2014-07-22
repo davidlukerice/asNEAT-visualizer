@@ -1,5 +1,4 @@
-var asNEAT = require('asNEAT/asNEAT')['default'],
-    context = asNEAT.offlineContext;
+var asNEAT = require('asNEAT/asNEAT')['default'];
 
 // Workaround for garbageCollected jsNodes
 // http://sriku.org/blog/2013/01/30/taming-the-scriptprocessornode/#replacing-gain-node-with-scriptprocessornode
@@ -68,18 +67,6 @@ OfflineSpectrogram.prototype.start = function() {
       outNode = this.outNode,
       jsNode, analyserNode;
 
-  jsNode = keep(context.createScriptProcessor(2048, 1, 1));
-  jsNode.connect(context.destination);
-  this.jsNode = jsNode;
-
-  analyserNode = context.createAnalyser();
-  analyserNode.smoothingTimeConstant = 0;
-  analyserNode.fftSize = this.fftSize;
-  this.analyserNode = analyserNode;
-
-  outNode.offlineNode.connect(analyserNode);
-  analyserNode.connect(jsNode);
-
   $(this.selector).append($canvas);
 
   $canvas.css({
@@ -109,43 +96,62 @@ OfflineSpectrogram.prototype.start = function() {
     ctx.fillRect(0,0,bounds.width,bounds.height);
   }
 
-  var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
+  var afterPrepHandler = function(contextPair) {
+    var context = contextPair.context;
+    self.context = context;
+
+    jsNode = keep(context.createScriptProcessor(2048, 1, 1));
+    jsNode.connect(context.destination);
+    self.jsNode = jsNode;
+
+    analyserNode = context.createAnalyser();
+    analyserNode.smoothingTimeConstant = 0;
+    analyserNode.fftSize = self.fftSize;
+    self.analyserNode = analyserNode;
+
+    outNode.offlineNode.connect(analyserNode);
+    analyserNode.connect(jsNode);
+
+    var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
       lastSum = 0,
       numRepeats = 0;
 
-  jsNode.onaudioprocess = function() {
+    jsNode.onaudioprocess = function() {
 
     var freqData = new Uint8Array(analyserNode.frequencyBinCount);
-    analyserNode.getByteFrequencyData(freqData);
+      analyserNode.getByteFrequencyData(freqData);
 
-    var sum = _.reduce(freqData, function(sum, val) {
-      return sum + val;
-    }, 0);
+      var sum = _.reduce(freqData, function(sum, val) {
+        return sum + val;
+      }, 0);
 
-    // Send blank data if the same sum has been used more than twice
-    if (sum===lastSum) {
-      ++numRepeats;
-      if (numRepeats >= 2) {
-        self.updateCanvas(blankArray);
+      // Send blank data if the same sum has been used more than twice
+      if (sum===lastSum) {
+        ++numRepeats;
+        if (numRepeats >= 2) {
+          self.updateCanvas(blankArray);
+        }
+        else
+          self.updateCanvas(freqData);
       }
-      else
+      else {
+        numRepeats = 0;
         self.updateCanvas(freqData);
-    }
-    else {
-      numRepeats = 0;
-      self.updateCanvas(freqData);
-    }
+      }
 
-    lastSum = sum;
+      lastSum = sum;
+    };
   };
 
-  this.network.offlinePlay();
+  this.network.offlinePlay(function done() {
+    console.log('doneRendering');
+  }, afterPrepHandler);
 };
 
 OfflineSpectrogram.prototype.stop = function() {
   this.$canvas.remove();
   $(window).off('resize', this.onResize);
-  this.jsNode.disconnect(context.destination);
+  this.jsNode.disconnect(this.context.destination);
   this.analyserNode.disconnect(this.jsNode);
   drop(this.jsNode);
 };

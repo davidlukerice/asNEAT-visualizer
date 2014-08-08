@@ -25,10 +25,6 @@ InstrumentVisualization.prototype.defaultParameters = {
   height: 512,
   selector: '.instrumentVisualization',
 
-  // number of frequency bands in the y direction
-  // TODO: Update based on height*2?
-  fftSize: 1024,
-
   // the colors used in the vis
   colorScaleColors: ['#000000', '#ff0000', '#ffff00', '#ffffff'],
   colorScalePositions: [0, 0.25, 0.75, 1]
@@ -82,6 +78,8 @@ InstrumentVisualization.prototype.start = function() {
   canvas.height = oldBounds.height;
   tempCanvas.width =  oldBounds.width;
   tempCanvas.height = oldBounds.height;
+  this.fftSize = canvas.height*2;
+
   this.onResize = function() {
     var bounds = self.getBounds();
     tempCtx.drawImage(canvas,
@@ -96,6 +94,9 @@ InstrumentVisualization.prototype.start = function() {
       0, 0, canvas.width, canvas.height);
     tempCanvas.width = bounds.width;
     tempCanvas.height = bounds.height;
+    self.fftSize = canvas.height*2;
+    analyserNode.fftSize = self.fftSize;
+    // TODO: Recreate analyserNodeConnection with new fft?
   };
   $(window).on('resize', this.onResize);
 
@@ -122,12 +123,11 @@ InstrumentVisualization.prototype.start = function() {
     analyserNode.connect(jsNode);
 
     var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
-      lastSum = 0,
-      numRepeats = 0;
+        lastSum = 0,
+        numRepeats = 0;
 
     jsNode.onaudioprocess = function() {
-
-    var freqData = new Uint8Array(analyserNode.frequencyBinCount);
+      var freqData = new Uint8Array(analyserNode.frequencyBinCount);
       analyserNode.getByteFrequencyData(freqData);
 
       var sum = _.reduce(freqData, function(sum, val) {
@@ -147,12 +147,11 @@ InstrumentVisualization.prototype.start = function() {
         numRepeats = 0;
         self.initUpdateCanvas(freqData);
       }
-
       lastSum = sum;
     };
   };
 
-  this.network.offlinePlay(function done() {
+  this.network.offlinePlay(function done(buffer) {
     console.log('doneRendering');
   }, afterPrepHandler);
 };

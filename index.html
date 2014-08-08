@@ -127,9 +127,11 @@
         function setupHandlers() {
           var stopFunc = null;
           $('button.play').click(function() {
+            instrumentVisualization.playStart();
             network.play();
           });
           $('button.playHold').on('mousedown',function() {
+            instrumentVisualization.playStart();
             if (stopFunc != null)
               stopFunc();
             stopFunc = network.playHold();

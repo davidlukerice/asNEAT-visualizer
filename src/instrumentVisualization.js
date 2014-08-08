@@ -1,4 +1,5 @@
-var asNEAT = require('asNEAT/asNEAT')['default'];
+var asNEAT = require('asNEAT/asNEAT')['default'],
+    context = asNEAT.context;
 
 var scriptNodes = {};
 var keep = (function() {
@@ -156,18 +157,6 @@ InstrumentVisualization.prototype.start = function() {
   }, afterPrepHandler);
 };
 
-InstrumentVisualization.prototype.stop = function() {
-  this.$canvas.remove();
-  $(window).off('resize', this.onResize);
-  this.jsNode.disconnect(this.context.destination);
-  this.analyserNode.disconnect(this.jsNode);
-  drop(this.jsNode);
-};
-
-InstrumentVisualization.prototype.refresh = function() {
-
-};
-
 /**
   @param freqData {Uint8Array}
 */
@@ -193,7 +182,120 @@ InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
   ++x;
 };
 
+InstrumentVisualization.prototype.hasPlayStarted = false;
+InstrumentVisualization.prototype.playStart = function() {
+  if (this.hasPlayStarted)
+    return;
+  this.hasPlayStarted = true;
 
+  var self = this,
+      canvas = this.canvas,
+      ctx = this.ctx,
+      tempCanvas = this.tempCanvas,
+      tempCtx = this.tempCtx,
+      outNode = this.outNode,
+      jsNode, analyserNode;
+
+  jsNode = keep(context.createScriptProcessor(2048, 1, 1));
+  jsNode.connect(context.destination);
+  this.jsNode = jsNode;
+
+  analyserNode = context.createAnalyser();
+  analyserNode.smoothingTimeConstant = 0;
+  analyserNode.fftSize = this.fftSize;
+  this.analyserNode = analyserNode;
+
+  outNode.node.connect(analyserNode);
+  analyserNode.connect(jsNode);
+
+  var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
+      lastSum = 0,
+      numRepeats = 0,
+      numBlank = 0;
+
+  jsNode.onaudioprocess = function() {
+
+    var freqData = new Uint8Array(analyserNode.frequencyBinCount);
+    analyserNode.getByteFrequencyData(freqData);
+
+    var sum = _.reduce(freqData, function(sum, val) {
+      return sum + val;
+    }, 0);
+
+    // Send blank data if the same sum has been used more than twice
+    // And don't even send anything after a set number of blanks
+    if (sum===lastSum) {
+      ++numRepeats;
+      if (numRepeats >= 2) {
+        ++numBlank;
+        if (numBlank < 50)
+          self.updateCanvas(blankArray);
+      }
+      else {
+        self.updateCanvas(freqData);
+        numBlank = 0;
+      }
+    }
+    else {
+      numRepeats = 0;
+      numBlank = 0;
+      self.updateCanvas(freqData);
+    }
+
+    lastSum = sum;
+  };
+};
+InstrumentVisualization.prototype.playStop = function() {
+  // TODO: Return back to orig offline display?
+  this.hasPlayStarted = false;
+};
+InstrumentVisualization.prototype.showNetwork = function() {
+  // TODO: Show the force vis
+};
+InstrumentVisualization.prototype.hideNetwork = function() {
+  // TODO: Hide the Force Vis
+};
+
+InstrumentVisualization.prototype.stop = function() {
+  this.$canvas.remove();
+  $(window).off('resize', this.onResize);
+  this.jsNode.disconnect(this.context.destination);
+  this.analyserNode.disconnect(this.jsNode);
+  drop(this.jsNode);
+};
+
+InstrumentVisualization.prototype.refresh = function() {
+
+};
+
+/**
+  @param freqData {Uint8Array}
+*/
+InstrumentVisualization.prototype.updateCanvas = function(freqData) {
+  var canvas = this.canvas,
+      tempCanvas = this.tempCanvas,
+      tempCtx = this.tempCtx,
+      ctx = this.ctx,
+      colorScale = this.colorScale,
+      bounds = this.getBounds(),
+      i, len, val;
+
+  // See if the canvas even exists
+  if (typeof bounds === "undefined")
+    return;
+
+  tempCtx.drawImage(canvas, 0, 0, bounds.width, bounds.height);
+  for (i=0,len = freqData.length; i<len; ++i) {
+    val = freqData[i];
+    ctx.fillStyle = colorScale(val).hex();
+    ctx.fillRect(bounds.width-1, bounds.height-i, 1, 1);
+  }
+
+  ctx.translate(-1, 0);
+  ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height,
+                            0, 0, canvas.width, canvas.height);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+};
 
 InstrumentVisualization.prototype.getBounds = function() {
   return this.canvas.getClientRects()[0];

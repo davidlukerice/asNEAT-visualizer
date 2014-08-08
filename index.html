@@ -37,10 +37,13 @@
     <br>
     <br>
 
+    <h2>Instrument Visualization</h2>
+    <div class="instrumentVisualization">
+    </div>
+
     <h2>Offline Spectrogram</h2>
     <div class="offlineSpectrogram">
     </div>
-
 
     <h2>Multi Visualization</h2>
     <button class="nextVisualization">Next Visualization</button><br>
@@ -73,7 +76,8 @@
             multiVisualization,
             forceVisualization,
             offlineSpectrogram,
-            liveSpectrogram;
+            liveSpectrogram,
+            instrumentVisualization;
 
         $(function() {
           var Utils = require('asNEAT/utils')['default'],
@@ -85,6 +89,12 @@
             .addOscillator()
             .splitMutation()
             .splitMutation();
+
+          instrumentVisualization = Visualizer.createInstrumentVisualization({
+            network: network
+          });
+          instrumentVisualization.init();
+          instrumentVisualization.start();
 
           multiVisualization = Visualizer.createMultiVisualization({
             network: network
@@ -163,7 +173,7 @@
             //liveSpectrogram.refresh();
 
             multiVisualization.refresh();
-            
+
             forceVisualization.refresh();
             $('.networkToString').html(network.toString());
           }

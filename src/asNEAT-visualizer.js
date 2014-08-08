@@ -4,7 +4,12 @@ import NetworkVisualization from 'asNEAT/networkVisualization';
 import ForceVisualization from 'asNEAT/forceVisualization';
 import OfflineSpectrogram from 'asNEAT/offlineSpectrogram';
 import LiveSpectrogram from 'asNEAT/liveSpectrogram';
+import InstrumentVisualization from 'asNEAT/instrumentVisualization';
 var Visualizer = {};
+
+Visualizer.createInstrumentVisualization = function(parameters) {
+    return new InstrumentVisualization(parameters);
+};
 
 Visualizer.createMultiVisualization = function(parameters) {
 

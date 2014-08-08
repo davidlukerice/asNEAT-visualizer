@@ -14,10 +14,10 @@ var drop = function(node) {
   return node;
 };
 
-var OfflineSpectrogram = function(parameters) {
+var InstrumentVisualization = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
 };
-OfflineSpectrogram.prototype.defaultParameters = {
+InstrumentVisualization.prototype.defaultParameters = {
   network: null,
   // (num) for px, or (string) for %
   width: "100%",
@@ -33,7 +33,7 @@ OfflineSpectrogram.prototype.defaultParameters = {
   colorScalePositions: [0, 0.25, 0.75, 1]
 };
 
-OfflineSpectrogram.prototype.init = function() {
+InstrumentVisualization.prototype.init = function() {
   var canvas = document.createElement('canvas'),
       ctx = canvas.getContext('2d'),
       tempCanvas = document.createElement('canvas'),
@@ -54,7 +54,7 @@ OfflineSpectrogram.prototype.init = function() {
   this.outNode = this.network.nodes[0];
 };
 
-OfflineSpectrogram.prototype.start = function() {
+InstrumentVisualization.prototype.start = function() {
   var self = this,
       canvas = this.canvas,
       ctx = this.ctx,
@@ -76,23 +76,33 @@ OfflineSpectrogram.prototype.start = function() {
     height: this.height
   });
 
+  var oldBounds = self.getBounds();
+  canvas.width = oldBounds.width;
+  canvas.height = oldBounds.height;
+  tempCanvas.width =  oldBounds.width;
+  tempCanvas.height = oldBounds.height;
   this.onResize = function() {
-    // TODO: Scale/Copy old canvas into new resized one
     var bounds = self.getBounds();
+    tempCtx.drawImage(canvas,
+      0, 0, canvas.width, canvas.height,
+      0, 0, tempCanvas.width, tempCanvas.height);
     canvas.width = bounds.width;
     canvas.height = bounds.height;
+    oldBounds = bounds;
+    clear();
+    ctx.drawImage(tempCanvas,
+      0, 0, tempCanvas.width, tempCanvas.height,
+      0, 0, canvas.width, canvas.height);
     tempCanvas.width = bounds.width;
     tempCanvas.height = bounds.height;
-    clearCanvas();
   };
   $(window).on('resize', this.onResize);
-  this.onResize();
 
-  function clearCanvas() {
-    var bounds = self.getBounds();
+  function clear() {
     ctx.fillStyle=self.colorScale(0).hex();
-    ctx.fillRect(0,0,bounds.width,bounds.height);
+    ctx.fillRect(0,0,oldBounds.width,oldBounds.height);
   }
+  clear();
 
   var afterPrepHandler = function(contextPair) {
     var context = contextPair.context;
@@ -127,14 +137,14 @@ OfflineSpectrogram.prototype.start = function() {
       if (sum===lastSum) {
         ++numRepeats;
         if (numRepeats >= 2) {
-          self.updateCanvas(blankArray);
+          self.initUpdateCanvas(blankArray);
         }
         else
-          self.updateCanvas(freqData);
+          self.initUpdateCanvas(freqData);
       }
       else {
         numRepeats = 0;
-        self.updateCanvas(freqData);
+        self.initUpdateCanvas(freqData);
       }
 
       lastSum = sum;
@@ -146,7 +156,7 @@ OfflineSpectrogram.prototype.start = function() {
   }, afterPrepHandler);
 };
 
-OfflineSpectrogram.prototype.stop = function() {
+InstrumentVisualization.prototype.stop = function() {
   this.$canvas.remove();
   $(window).off('resize', this.onResize);
   this.jsNode.disconnect(this.context.destination);
@@ -154,14 +164,15 @@ OfflineSpectrogram.prototype.stop = function() {
   drop(this.jsNode);
 };
 
-OfflineSpectrogram.prototype.refresh = function() {
+InstrumentVisualization.prototype.refresh = function() {
 
 };
 
 /**
   @param freqData {Uint8Array}
 */
-OfflineSpectrogram.prototype.updateCanvas = function(freqData) {
+var x=0;
+InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
   var canvas = this.canvas,
       tempCanvas = this.tempCanvas,
       tempCtx = this.tempCtx,
@@ -169,26 +180,23 @@ OfflineSpectrogram.prototype.updateCanvas = function(freqData) {
       colorScale = this.colorScale,
       bounds = this.getBounds(),
       i, len, val;
-
   // See if the canvas even exists
   if (typeof bounds === "undefined")
     return;
 
-  tempCtx.drawImage(canvas, 0, 0, bounds.width, bounds.height);
+  //ctx.translate(-1, 0);
   for (i=0,len = freqData.length; i<len; ++i) {
     val = freqData[i];
     ctx.fillStyle = colorScale(val).hex();
-    ctx.fillRect(bounds.width-1, bounds.height-i, 1, 1);
+    ctx.fillRect(x, bounds.height-i, 1, 1);
   }
-
-  ctx.translate(-1, 0);
-  ctx.drawImage(tempCanvas, 0, 0, bounds.width, bounds.height,
-                            0, 0, bounds.width, bounds.height);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ++x;
 };
 
-OfflineSpectrogram.prototype.getBounds = function() {
+
+
+InstrumentVisualization.prototype.getBounds = function() {
   return this.canvas.getClientRects()[0];
 };
 
-export default OfflineSpectrogram;
+export default InstrumentVisualization;

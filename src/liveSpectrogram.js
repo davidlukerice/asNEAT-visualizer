@@ -106,7 +106,7 @@ LiveSpectrogram.prototype.start = function() {
   function clearCanvas() {
     var bounds = self.getBounds();
     ctx.fillStyle=self.colorScale(0).hex();
-    ctx.fillRect(0,0,bounds.width,bounds.height);
+    ctx.fillRect(0,0,canvas.width,canvas.height);
   }
 
   var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
@@ -176,8 +176,8 @@ LiveSpectrogram.prototype.updateCanvas = function(freqData) {
   }
 
   ctx.translate(-1, 0);
-  ctx.drawImage(tempCanvas, 0, 0, bounds.width, bounds.height,
-                            0, 0, bounds.width, bounds.height);
+  ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height,
+                            0, 0, canvas.width, canvas.height);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 };
 

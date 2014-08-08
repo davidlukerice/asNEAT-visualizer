@@ -25,7 +25,7 @@ Visualizer.createForceVisualization = function(parameters) {
   return new ForceVisualization(parameters);
 };
 
-Visualizer.creatOfflineSpectrogram = function(parameters) {
+Visualizer.createOfflineSpectrogram = function(parameters) {
 	return new OfflineSpectrogram(parameters);
 };
 

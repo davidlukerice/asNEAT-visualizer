@@ -28,7 +28,9 @@ InstrumentVisualization.prototype.defaultParameters = {
 
   // the colors used in the vis
   colorScaleColors: ['#000000', '#ff0000', '#ffff00', '#ffffff'],
-  colorScalePositions: [0, 0.25, 0.75, 1]
+  colorScalePositions: [0, 0.25, 0.75, 1],
+
+  blankStepsUntilPause: 50
 };
 
 var id = 0;
@@ -141,7 +143,8 @@ InstrumentVisualization.prototype.start = function() {
   var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
       lastSum = 0,
       numRepeats = 0,
-      numBlank = 0;
+      numBlank = 0,
+      blankStepsUntilPause = this.blankStepsUntilPause;
 
   jsNode.onaudioprocess = function() {
     var freqData = new Uint8Array(analyserNode.frequencyBinCount);
@@ -157,7 +160,7 @@ InstrumentVisualization.prototype.start = function() {
       ++numRepeats;
       if (numRepeats >= 2) {
         ++numBlank;
-        if (numBlank < 50)
+        if (numBlank < blankStepsUntilPause)
           self.initUpdateCanvas(blankArray);
         else {
           jsNode.onaudioprocess = null;
@@ -236,7 +239,8 @@ InstrumentVisualization.prototype.playStart = function() {
   var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
       lastSum = 0,
       numRepeats = 0,
-      numBlank = 0;
+      numBlank = 0,
+      blankStepsUntilPause = this.blankStepsUntilPause;
 
   jsNode.onaudioprocess = function() {
 
@@ -252,7 +256,7 @@ InstrumentVisualization.prototype.playStart = function() {
       ++numRepeats;
       if (numRepeats >= 2) {
         ++numBlank;
-        if (numBlank < 50)
+        if (numBlank < blankStepsUntilPause)
           self.updateCanvas(blankArray);
       }
       else {

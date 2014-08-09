@@ -270,15 +270,18 @@ InstrumentVisualization.prototype.playStart = function() {
   };
 };
 
+InstrumentVisualization.prototype.isShowingNetwork = false;
 InstrumentVisualization.prototype.showNetwork = function() {
-  if(this.$networkDiv.is(':visible'))
+  if(this.isShowingNetwork)
     return;
+  this.isShowingNetwork = true;
   this.$networkDiv.show();
   this.forceVis.start();
 };
 InstrumentVisualization.prototype.hideNetwork = function() {
-  if(!this.$networkDiv.is(':visible'))
+  if(!this.isShowingNetwork)
     return;
+  this.isShowingNetwork = false;
   this.forceVis.stop();
   this.$networkDiv.hide();
 };

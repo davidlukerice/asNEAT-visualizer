@@ -120,54 +120,66 @@ InstrumentVisualization.prototype.start = function() {
   }
   clear();
 
-  var afterPrepHandler = function(contextPair) {
-    var context = contextPair.context;
-    self.context = context;
+  jsNode = keep(context.createScriptProcessor(2048, 1, 1));
+  jsNode.connect(context.destination);
+  this.jsNode = jsNode;
 
-    jsNode = keep(context.createScriptProcessor(2048, 1, 1));
-    jsNode.connect(context.destination);
-    self.jsNode = jsNode;
+  analyserNode = context.createAnalyser();
+  analyserNode.smoothingTimeConstant = 0;
+  analyserNode.fftSize = this.fftSize;
+  this.analyserNode = analyserNode;
 
-    analyserNode = context.createAnalyser();
-    analyserNode.smoothingTimeConstant = 0;
-    analyserNode.fftSize = self.fftSize;
-    self.analyserNode = analyserNode;
+  // swap out outnode with custom one with
+  var oldNode = outNode.node;
+  var tempFrontGain = context.createGain();
+  tempFrontGain.gain.value = 1.0;
 
-    outNode.offlineNode.connect(analyserNode);
-    analyserNode.connect(jsNode);
+  outNode.node = tempFrontGain;
+  outNode.node.connect(analyserNode);
+  analyserNode.connect(jsNode);
 
-    var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
-        lastSum = 0,
-        numRepeats = 0;
+  var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
+      lastSum = 0,
+      numRepeats = 0,
+      numBlank = 0;
 
-    jsNode.onaudioprocess = function() {
-      var freqData = new Uint8Array(analyserNode.frequencyBinCount);
-      analyserNode.getByteFrequencyData(freqData);
+  jsNode.onaudioprocess = function() {
+    var freqData = new Uint8Array(analyserNode.frequencyBinCount);
+    analyserNode.getByteFrequencyData(freqData);
 
-      var sum = _.reduce(freqData, function(sum, val) {
-        return sum + val;
-      }, 0);
+    var sum = _.reduce(freqData, function(sum, val) {
+      return sum + val;
+    }, 0);
 
-      // Send blank data if the same sum has been used more than twice
-      if (sum===lastSum) {
-        ++numRepeats;
-        if (numRepeats >= 2) {
+    // Send blank data if the same sum has been used more than twice
+    // And don't even send anything after a set number of blanks
+    if (sum===lastSum) {
+      ++numRepeats;
+      if (numRepeats >= 2) {
+        ++numBlank;
+        if (numBlank < 50)
           self.initUpdateCanvas(blankArray);
+        else {
+          jsNode.onaudioprocess = null;
+          drop(jsNode);
         }
-        else
-          self.initUpdateCanvas(freqData);
       }
       else {
-        numRepeats = 0;
         self.initUpdateCanvas(freqData);
+        numBlank = 0;
       }
-      lastSum = sum;
-    };
+    }
+    else {
+      numRepeats = 0;
+      numBlank = 0;
+      self.initUpdateCanvas(freqData);
+    }
+
+    lastSum = sum;
   };
 
-  this.network.offlinePlay(function done(buffer) {
-    console.log('doneRendering');
-  }, afterPrepHandler);
+  this.network.play();
+  outNode.node = oldNode;
 };
 
 /**
@@ -235,8 +247,7 @@ InstrumentVisualization.prototype.playStart = function() {
       return sum + val;
     }, 0);
 
-    // Send blank data if the same sum has been used more than twice
-    // And don't even send anything after a set number of blanks
+    // go untill a set number of blank iterations then kill the jsNode
     if (sum===lastSum) {
       ++numRepeats;
       if (numRepeats >= 2) {

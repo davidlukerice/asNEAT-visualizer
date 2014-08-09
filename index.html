@@ -41,7 +41,7 @@
     <button class="showNetwork">Show Network</button>
     <button class="hideNetwork">Hide Network</button>
     <br>
-    <div class="instrumentVisualization">
+    <div class="instrumentVisualization" style="width:30%; height:300px">
     </div>
 
     <h2>Offline Spectrogram</h2>
@@ -94,7 +94,9 @@
             .splitMutation();
 
           instrumentVisualization = Visualizer.createInstrumentVisualization({
-            network: network
+            network: network,
+            width: "100%",
+            height: "100%"
           });
           instrumentVisualization.init();
           instrumentVisualization.start();
@@ -130,11 +132,9 @@
         function setupHandlers() {
           var stopFunc = null;
           $('button.play').click(function() {
-            instrumentVisualization.playStart();
             network.play();
           });
           $('button.playHold').on('mousedown',function() {
-            instrumentVisualization.playStart();
             if (stopFunc != null)
               stopFunc();
             stopFunc = network.playHold();

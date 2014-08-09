@@ -164,10 +164,8 @@ InstrumentVisualization.prototype.start = function() {
         ++numBlank;
         if (numBlank < blankStepsUntilPause)
           self.initUpdateCanvas(blankArray);
-        else {
-          jsNode.onaudioprocess = null;
-          drop(jsNode);
-        }
+        else
+          clearProcessing();
       }
       else {
         self.initUpdateCanvas(freqData);
@@ -183,8 +181,15 @@ InstrumentVisualization.prototype.start = function() {
     lastSum = sum;
   };
 
+  function clearProcessing() {
+    jsNode.onaudioprocess = null;
+    drop(jsNode);
+  }
+
   this.network.play();
   outNode.node = oldNode;
+
+  this.playStart();
 };
 
 /**
@@ -206,12 +211,7 @@ InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
   copyFromTempCanvas.call(this);
 };
 
-InstrumentVisualization.prototype.hasPlayStarted = false;
 InstrumentVisualization.prototype.playStart = function() {
-  if (this.hasPlayStarted)
-    return;
-  this.hasPlayStarted = true;
-
   var self = this,
       canvas = this.canvas,
       ctx = this.ctx,
@@ -234,9 +234,9 @@ InstrumentVisualization.prototype.playStart = function() {
 
   var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
       lastSum = 0,
-      numRepeats = 0,
-      numBlank = 0,
-      blankStepsUntilPause = this.blankStepsUntilPause;
+      blankStepsUntilPause = this.blankStepsUntilPause,
+      numRepeats = blankStepsUntilPause,
+      numBlank = blankStepsUntilPause;
 
   jsNode.onaudioprocess = function() {
 
@@ -250,8 +250,8 @@ InstrumentVisualization.prototype.playStart = function() {
     // go untill a set number of blank iterations then kill the jsNode
     if (sum===lastSum) {
       ++numRepeats;
+      ++numBlank;
       if (numRepeats >= 2) {
-        ++numBlank;
         if (numBlank < blankStepsUntilPause)
           self.updateCanvas(blankArray);
       }
@@ -269,10 +269,7 @@ InstrumentVisualization.prototype.playStart = function() {
     lastSum = sum;
   };
 };
-InstrumentVisualization.prototype.playStop = function() {
-  // TODO: Return back to orig offline display?
-  this.hasPlayStarted = false;
-};
+
 InstrumentVisualization.prototype.showNetwork = function() {
   if(this.$networkDiv.is(':visible'))
     return;

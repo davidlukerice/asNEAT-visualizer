@@ -70,16 +70,15 @@ InstrumentVisualization.prototype.start = function() {
   });
   $tempCanvas.css({
     width: this.width,
-    height: this.height
+    height: this.fftSize
   });
 
   var oldBounds = self.getBounds();
+  this.fftSize = roundToPowerOf2(oldBounds.height);
   canvas.width = oldBounds.width;
   canvas.height = oldBounds.height;
   tempCanvas.width =  oldBounds.width;
-  tempCanvas.height = oldBounds.height;
-  this.fftSize = canvas.height*2;
-
+  tempCanvas.height = this.fftSize/2;
   this.onResize = function() {
     var bounds = self.getBounds();
     tempCtx.drawImage(canvas,
@@ -93,10 +92,7 @@ InstrumentVisualization.prototype.start = function() {
       0, 0, tempCanvas.width, tempCanvas.height,
       0, 0, canvas.width, canvas.height);
     tempCanvas.width = bounds.width;
-    tempCanvas.height = bounds.height;
-    self.fftSize = canvas.height*2;
-    analyserNode.fftSize = self.fftSize;
-    // TODO: Recreate analyserNodeConnection with new fft?
+    tempCanvas.height = self.fftSize/2;
   };
   $(window).on('resize', this.onResize);
 
@@ -283,21 +279,32 @@ InstrumentVisualization.prototype.updateCanvas = function(freqData) {
   if (typeof bounds === "undefined")
     return;
 
-  tempCtx.drawImage(canvas, 0, 0, bounds.width, bounds.height);
+  // shift the temp canvas left and draw in next section
+  var imageData = tempCtx.getImageData(1, 0, tempCtx.canvas.width-1, tempCtx.canvas.height);
+  tempCtx.putImageData(imageData, 0, 0);
   for (i=0,len = freqData.length; i<len; ++i) {
     val = freqData[i];
-    ctx.fillStyle = colorScale(val).hex();
-    ctx.fillRect(bounds.width-1, bounds.height-i, 1, 1);
+    tempCtx.fillStyle = colorScale(val).hex();
+    tempCtx.fillRect(bounds.width-1, bounds.height-i, 1, 1);
   }
 
-  ctx.translate(-1, 0);
+  // map temp canvas that with height=fftSize
   ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height,
                             0, 0, canvas.width, canvas.height);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
 };
 
 InstrumentVisualization.prototype.getBounds = function() {
   return this.canvas.getClientRects()[0];
 };
+
+function roundToPowerOf2(v) {
+  v--;
+  v|=v>>1;
+  v|=v>>2;
+  v|=v>>4;
+  v|=v>>8;
+  v|=v>>16;
+  return ++v;
+}
 
 export default InstrumentVisualization;

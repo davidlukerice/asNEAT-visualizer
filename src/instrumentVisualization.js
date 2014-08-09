@@ -1,4 +1,5 @@
 var asNEAT = require('asNEAT/asNEAT')['default'],
+    ForceVisualization = require('asNEAT/forceVisualization')['default'],
     context = asNEAT.context;
 
 var scriptNodes = {};
@@ -30,18 +31,28 @@ InstrumentVisualization.prototype.defaultParameters = {
   colorScalePositions: [0, 0.25, 0.75, 1]
 };
 
+var id = 0;
 InstrumentVisualization.prototype.init = function() {
   var canvas = document.createElement('canvas'),
       ctx = canvas.getContext('2d'),
       tempCanvas = document.createElement('canvas'),
-      tempCtx = tempCanvas.getContext('2d');
+      tempCtx = tempCanvas.getContext('2d'),
+      networkDiv = document.createElement('div');
   this.canvas = canvas;
   this.ctx = ctx;
   this.tempCanvas = tempCanvas;
   this.tempCtx = tempCtx;
+  this.networkDiv = networkDiv;
 
   this.$canvas = $(canvas);
   this.$tempCanvas = $(tempCanvas);
+  this.networkDivClass = 'network'+(++id);
+  $(this.selector)
+    .addClass('asNEATInstrumentVis');
+  this.$networkDiv = $(networkDiv)
+    .addClass(this.networkDivClass)
+    .addClass('asNEATInstrumentVisNetwork')
+    .hide();
 
   this.colorScale = new chroma.scale(
     this.colorScaleColors,
@@ -57,18 +68,25 @@ InstrumentVisualization.prototype.start = function() {
       ctx = this.ctx,
       tempCanvas = this.tempCanvas,
       tempCtx = this.tempCtx,
-      $canvas = this.$canvas,
-      $tempCanvas = this.$tempCanvas,
       outNode = this.outNode,
       jsNode, analyserNode;
 
-  $(this.selector).append($canvas);
+  $(this.selector).append(this.$canvas);
+  $(this.selector).append(this.$networkDiv);
 
-  $canvas.css({
+  this.forceVis = new ForceVisualization({
+    network: this.network,
+    selector: "."+this.networkDivClass,
+    width:'100%',
+    height:'100%'
+  });
+  this.forceVis.init();
+
+  this.$canvas.css({
     width: this.width,
     height: this.height
   });
-  $tempCanvas.css({
+  this.$tempCanvas.css({
     width: this.width,
     height: this.fftSize
   });
@@ -245,10 +263,16 @@ InstrumentVisualization.prototype.playStop = function() {
   this.hasPlayStarted = false;
 };
 InstrumentVisualization.prototype.showNetwork = function() {
-  // TODO: Show the force vis
+  if(this.$networkDiv.is(':visible'))
+    return;
+  this.$networkDiv.show();
+  this.forceVis.start();
 };
 InstrumentVisualization.prototype.hideNetwork = function() {
-  // TODO: Hide the Force Vis
+  if(!this.$networkDiv.is(':visible'))
+    return;
+  this.forceVis.stop();
+  this.$networkDiv.hide();
 };
 
 InstrumentVisualization.prototype.stop = function() {

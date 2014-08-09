@@ -38,6 +38,9 @@
     <br>
 
     <h2>Instrument Visualization</h2>
+    <button class="showNetwork">Show Network</button>
+    <button class="hideNetwork">Hide Network</button>
+    <br>
     <div class="instrumentVisualization">
     </div>
 
@@ -168,14 +171,17 @@
           $('button.nextVisualization').click(function() {
             multiVisualization.nextVisualization();
           });
+
+          $('button.showNetwork').click(function() {
+            instrumentVisualization.showNetwork();
+          });
+          $('button.hideNetwork').click(function() {
+            instrumentVisualization.hideNetwork();
+          });
         }
 
         function updateVisualization() {
-            // TODO: update the vis' network?
-            //liveSpectrogram.refresh();
-
             multiVisualization.refresh();
-
             forceVisualization.refresh();
             $('.networkToString').html(network.toString());
           }

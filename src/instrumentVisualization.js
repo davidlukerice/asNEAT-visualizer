@@ -197,6 +197,10 @@ InstrumentVisualization.prototype.start = function() {
 */
 InstrumentVisualization.prototype.initCanvasX = 0;
 InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
+  // If the initial rendering runs into live updates, don't draw anything
+  if (this.numUpdates + this.initCanvasX >= this.canvas.width)
+    return;
+
   var tempCtx = this.tempCtx,
       colorScale = this.colorScale,
       tempCanvas = this.tempCanvas,
@@ -234,6 +238,7 @@ InstrumentVisualization.prototype.playStart = function() {
 
   var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
       lastSum = 0,
+      numAllowedRepeats = 2,
       blankStepsUntilPause = this.blankStepsUntilPause,
       numRepeats = blankStepsUntilPause,
       numBlank = blankStepsUntilPause;
@@ -248,10 +253,12 @@ InstrumentVisualization.prototype.playStart = function() {
     }, 0);
 
     // go untill a set number of blank iterations then kill the jsNode
-    if (sum===lastSum) {
+
+    if (sum === lastSum) {
       ++numRepeats;
       ++numBlank;
-      if (numRepeats >= 2) {
+
+      if (numRepeats >= numAllowedRepeats) {
         if (numBlank < blankStepsUntilPause)
           self.updateCanvas(blankArray);
       }
@@ -298,6 +305,7 @@ InstrumentVisualization.prototype.refresh = function() {
 
 };
 
+InstrumentVisualization.prototype.numUpdates = 0;
 /**
   @param freqData {Uint8Array}
 */
@@ -315,6 +323,7 @@ InstrumentVisualization.prototype.updateCanvas = function(freqData) {
     tempCtx.fillRect(tempCanvas.width-1, tempCanvas.height-i, 1, 1);
   }
 
+  ++this.numUpdates;
   copyFromTempCanvas.call(this);
 };
 

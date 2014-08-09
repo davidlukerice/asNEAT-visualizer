@@ -2,6 +2,8 @@ var asNEAT = require('asNEAT/asNEAT')['default'],
     ForceVisualization = require('asNEAT/forceVisualization')['default'],
     context = asNEAT.context;
 
+// TODO: Clean this up... it's so bad :'(
+
 var scriptNodes = {};
 var keep = (function() {
   var nextNodeID = 1;
@@ -190,10 +192,7 @@ InstrumentVisualization.prototype.start = function() {
 */
 var x=0;
 InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
-  var canvas = this.canvas,
-      tempCanvas = this.tempCanvas,
-      tempCtx = this.tempCtx,
-      ctx = this.ctx,
+  var tempCtx = this.tempCtx,
       colorScale = this.colorScale,
       bounds = this.getBounds(),
       i, len, val;
@@ -201,13 +200,13 @@ InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
   if (typeof bounds === "undefined")
     return;
 
-  //ctx.translate(-1, 0);
   for (i=0,len = freqData.length; i<len; ++i) {
     val = freqData[i];
-    ctx.fillStyle = colorScale(val).hex();
-    ctx.fillRect(x, bounds.height-i, 1, 1);
+    tempCtx.fillStyle = colorScale(val).hex();
+    tempCtx.fillRect(x, bounds.height-i, 1, 1);
   }
   ++x;
+  copyFromTempCanvas.call(this);
 };
 
 InstrumentVisualization.prototype.hasPlayStarted = false;
@@ -306,10 +305,7 @@ InstrumentVisualization.prototype.refresh = function() {
   @param freqData {Uint8Array}
 */
 InstrumentVisualization.prototype.updateCanvas = function(freqData) {
-  var canvas = this.canvas,
-      tempCanvas = this.tempCanvas,
-      tempCtx = this.tempCtx,
-      ctx = this.ctx,
+  var tempCtx = this.tempCtx,
       colorScale = this.colorScale,
       bounds = this.getBounds(),
       i, len, val;
@@ -319,22 +315,34 @@ InstrumentVisualization.prototype.updateCanvas = function(freqData) {
     return;
 
   // shift the temp canvas left and draw in next section
-  var imageData = tempCtx.getImageData(1, 0, tempCtx.canvas.width-1, tempCtx.canvas.height);
-  tempCtx.putImageData(imageData, 0, 0);
+  shiftTempCanvasLeft.call(this);
   for (i=0,len = freqData.length; i<len; ++i) {
     val = freqData[i];
     tempCtx.fillStyle = colorScale(val).hex();
     tempCtx.fillRect(bounds.width-1, bounds.height-i, 1, 1);
   }
 
-  // map temp canvas that with height=fftSize
-  ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height,
-                            0, 0, canvas.width, canvas.height);
+  copyFromTempCanvas.call(this);
 };
 
 InstrumentVisualization.prototype.getBounds = function() {
   return this.canvas.getClientRects()[0];
 };
+
+function shiftTempCanvasLeft() {
+  var tempCtx = this.tempCtx,
+      imageData = tempCtx.getImageData(1, 0, tempCtx.canvas.width-1, tempCtx.canvas.height);
+  tempCtx.putImageData(imageData, 0, 0);
+}
+
+function copyFromTempCanvas() {
+  var canvas = this.canvas,
+      tempCanvas = this.tempCanvas;
+  // map temp canvas that with height=fftSize
+  this.ctx.drawImage(tempCanvas,
+    0, 0, tempCanvas.width, tempCanvas.height,
+    0, 0, canvas.width, canvas.height);
+}
 
 function roundToPowerOf2(v) {
   v--;

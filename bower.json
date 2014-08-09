@@ -21,12 +21,10 @@
   ],
   "license": "MIT",
   "ignore": [
-    "**/.*",
     "node_modules",
     "vendor",
-    "test",
-    "tests",
-    "src"
+    "tmp",
+    "test"
   ],
   "dependencies": {
     "jquery": "~1.11.1",

@@ -17,4 +17,3 @@ vendor/
 tmp/
 *.sublime-project
 *.sublime-workspace
-dist/asNEAT-visualizer.js.map

@@ -30,8 +30,8 @@
   ],
   "dependencies": {
     "jquery": "~1.11.1",
-    "asNEAT": "#master",
-    "d3": "~3.4.6",
+    "asNEAT": "~0.3.0",
+    "d3": "~3.4.11",
     "lodash": "~2.4.1",
     "chroma-js": "~0.5.6"
   }

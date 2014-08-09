@@ -195,7 +195,7 @@ InstrumentVisualization.prototype.start = function() {
 /**
   @param freqData {Uint8Array}
 */
-var x=0;
+InstrumentVisualization.prototype.initCanvasX = 0;
 InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
   var tempCtx = this.tempCtx,
       colorScale = this.colorScale,
@@ -205,9 +205,9 @@ InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
   for (i=0,len = freqData.length; i<len; ++i) {
     val = freqData[i];
     tempCtx.fillStyle = colorScale(val).hex();
-    tempCtx.fillRect(x, tempCanvas.height-i, 1, 1);
+    tempCtx.fillRect(this.initCanvasX, tempCanvas.height-i, 1, 1);
   }
-  ++x;
+  ++this.initCanvasX;
   copyFromTempCanvas.call(this);
 };
 

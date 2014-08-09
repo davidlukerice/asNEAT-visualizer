@@ -194,16 +194,13 @@ var x=0;
 InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
   var tempCtx = this.tempCtx,
       colorScale = this.colorScale,
-      bounds = this.getBounds(),
+      tempCanvas = this.tempCanvas,
       i, len, val;
-  // See if the canvas even exists
-  if (typeof bounds === "undefined")
-    return;
 
   for (i=0,len = freqData.length; i<len; ++i) {
     val = freqData[i];
     tempCtx.fillStyle = colorScale(val).hex();
-    tempCtx.fillRect(x, bounds.height-i, 1, 1);
+    tempCtx.fillRect(x, tempCanvas.height-i, 1, 1);
   }
   ++x;
   copyFromTempCanvas.call(this);
@@ -307,19 +304,15 @@ InstrumentVisualization.prototype.refresh = function() {
 InstrumentVisualization.prototype.updateCanvas = function(freqData) {
   var tempCtx = this.tempCtx,
       colorScale = this.colorScale,
-      bounds = this.getBounds(),
+      tempCanvas = this.tempCanvas,
       i, len, val;
-
-  // See if the canvas even exists
-  if (typeof bounds === "undefined")
-    return;
 
   // shift the temp canvas left and draw in next section
   shiftTempCanvasLeft.call(this);
   for (i=0,len = freqData.length; i<len; ++i) {
     val = freqData[i];
     tempCtx.fillStyle = colorScale(val).hex();
-    tempCtx.fillRect(bounds.width-1, bounds.height-i, 1, 1);
+    tempCtx.fillRect(tempCanvas.width-1, tempCanvas.height-i, 1, 1);
   }
 
   copyFromTempCanvas.call(this);

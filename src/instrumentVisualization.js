@@ -292,7 +292,7 @@ InstrumentVisualization.prototype.hideNetwork = function() {
 InstrumentVisualization.prototype.stop = function() {
   this.$canvas.remove();
   $(window).off('resize', this.onResize);
-  this.jsNode.disconnect(this.context.destination);
+  this.jsNode.disconnect(context.destination);
   this.analyserNode.disconnect(this.jsNode);
   drop(this.jsNode);
 };

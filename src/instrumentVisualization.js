@@ -25,7 +25,7 @@ InstrumentVisualization.prototype.defaultParameters = {
   network: null,
   // (num) for px, or (string) for %
   width: "100%",
-  height: 512,
+  height: "100%",
   selector: '.instrumentVisualization',
 
   // the colors used in the vis

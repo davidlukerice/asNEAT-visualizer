@@ -78,14 +78,6 @@ InstrumentVisualization.prototype.start = function() {
   $(this.selector).append(this.$canvas);
   $(this.selector).append(this.$networkDiv);
 
-  this.forceVis = new ForceVisualization({
-    network: this.network,
-    selector: "."+this.networkDivClass,
-    width:'100%',
-    height:'100%'
-  });
-  this.forceVis.init();
-
   this.$canvas.css({
     width: this.width,
     height: this.height
@@ -283,6 +275,17 @@ InstrumentVisualization.prototype.showNetwork = function() {
     return;
   this.isShowingNetwork = true;
   this.$networkDiv.show();
+
+  if (!this.forceVis) {
+    this.forceVis = new ForceVisualization({
+      network: this.network,
+      selector: "."+this.networkDivClass,
+      width:'100%',
+      height:'100%'
+    });
+    this.forceVis.init();
+  }
+
   this.forceVis.start();
 };
 InstrumentVisualization.prototype.hideNetwork = function() {

@@ -305,7 +305,9 @@ InstrumentVisualization.prototype.stop = function() {
 };
 
 InstrumentVisualization.prototype.refresh = function() {
-
+  // TODO: Refresh refresh vis?
+  if (this.forceVis)
+    this.forceVis.refresh();
 };
 
 InstrumentVisualization.prototype.numUpdates = 0;

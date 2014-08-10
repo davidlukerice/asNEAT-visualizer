@@ -31,14 +31,14 @@ ForceVisualization.prototype.start = function() {
       .attr('width', this.width)
       .attr('height', this.height)
       .attr('pointer-events', 'all');
-  
+
   // Have the back group watch for zoom events and move the forward group.
   // This fixes the issue of dragging a node also call the zoom events
   var backG = svg.append('g')
       .call(d3.behavior.zoom().on('zoom', function() {
         frontG.attr("transform",
           "translate(" + d3.event.translate + ")" +
-          " scale(" + d3.event.scale + ")"); 
+          " scale(" + d3.event.scale + ")");
       }));
 
   var frontG = svg.append('g');
@@ -72,7 +72,7 @@ ForceVisualization.prototype.start = function() {
   var defs = frontG.append("defs");
 
   defs.selectAll("marker")
-    .data(["enabled", "disabled"])
+    .data(["asNEAT-force-viz-enabled", "asNEAT-force-viz-disabled"])
   .enter().append("marker")
     .attr("id", function(d) { return d; })
     .attr("viewBox", "0 -5 10 10")
@@ -87,7 +87,7 @@ ForceVisualization.prototype.start = function() {
   // Create a highlight filter that creates an
   // orangish shadow under the element
   var hFilter = defs.append('filter')
-    .attr('id', 'highlight')
+    .attr('id', 'asNEAT-force-viz-')
     .attr('height', '200%')
     .attr('width', '200%')
     .attr('x', "-50%").attr('y', "-50%");
@@ -130,7 +130,7 @@ ForceVisualization.prototype.stop = function() {
   creates a representation of each node/connection in the network to be shown
  **/
 ForceVisualization.prototype.updateVisualizationNetwork = function() {
-  
+
   var nodes = this.vNodes,
       connections = this.vConnections;
 
@@ -258,17 +258,17 @@ ForceVisualization.prototype.refresh = function() {
 
   function getMarker(conn) {
     return "url(#"+
-      (conn.asNEATConnection.enabled ? "enabled" : "disabled")+
+      (conn.asNEATConnection.enabled ? "asNEAT-force-viz-enabled" : "asNEAT-force-viz-disabled")+
       ")";
   }
 
   function getNodeFilter(node) {
     return node.asNEATNode.hasChanged ?
-      "url(#highlight)" : "";
+      "url(#asNEAT-force-viz-highlight)" : "";
   }
   function getConnectionFilter(conn) {
     return conn.asNEATConnection.hasChanged ?
-      "url(#highlight)" : "";
+      "url(#asNEAT-force-viz-highlight)" : "";
   }
 
   var forceLayout = this.forceLayout;
@@ -277,7 +277,7 @@ ForceVisualization.prototype.refresh = function() {
 
   var connections = this.svg.select('.connections').selectAll('.connection')
     .data(vConnections, getConnectionId);
-  
+
   connections.enter().append("path")
     .attr('class', "connection")
     .style('stroke', getConnectionColor)

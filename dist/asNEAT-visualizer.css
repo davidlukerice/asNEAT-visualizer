@@ -1,8 +1,8 @@
 
-svg marker#enabled {
+svg marker#asNEAT-force-viz-enabled {
   fill: black;
 }
-svg marker#disabled {
+svg marker#asNEAT-force-viz-disabled {
   fill: #aaa;
 }
 svg .connections .connection {

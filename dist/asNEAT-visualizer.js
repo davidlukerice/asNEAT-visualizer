@@ -1,4 +1,4 @@
-/* asNEAT-visualizer 0.3.0 2014-08-10 */
+/* asNEAT-visualizer 0.3.1 2014-08-11 */
 define("asNEAT/asNEAT-visualizer", 
   ["asNEAT/multiVisualization","asNEAT/networkVisualization","asNEAT/forceVisualization","asNEAT/offlineSpectrogram","asNEAT/liveSpectrogram","asNEAT/instrumentVisualization","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
@@ -858,7 +858,9 @@ define("asNEAT/instrumentVisualization",
     };
     
     InstrumentVisualization.prototype.refresh = function() {
-    
+      // TODO: Refresh refresh vis?
+      if (this.forceVis)
+        this.forceVis.refresh();
     };
     
     InstrumentVisualization.prototype.numUpdates = 0;

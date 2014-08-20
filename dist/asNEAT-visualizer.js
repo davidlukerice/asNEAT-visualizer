@@ -1,4 +1,4 @@
-/* asNEAT-visualizer 0.3.1 2014-08-11 */
+/* asNEAT-visualizer 0.3.2 2014-08-20 */
 define("asNEAT/asNEAT-visualizer", 
   ["asNEAT/multiVisualization","asNEAT/networkVisualization","asNEAT/forceVisualization","asNEAT/offlineSpectrogram","asNEAT/liveSpectrogram","asNEAT/instrumentVisualization","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
@@ -778,7 +778,7 @@ define("asNEAT/instrumentVisualization",
       analyserNode.fftSize = this.fftSize;
       this.analyserNode = analyserNode;
     
-      outNode.node.connect(analyserNode);
+      outNode.secondaryNode.connect(analyserNode);
       analyserNode.connect(jsNode);
     
       var blankArray = new Uint8Array(analyserNode.frequencyBinCount),

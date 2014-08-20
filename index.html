@@ -33,7 +33,8 @@
     <button class="addConnection">Add Connection</button>
     <button class="mutateWeight">Mutate Weights</button>
     <button class="mutateNodeParameters">Mutate Node parameter</button>
-
+    <br>
+    <button class="panic">Panic!</button>
     <br>
     <br>
 
@@ -80,13 +81,16 @@
             forceVisualization,
             offlineSpectrogram,
             liveSpectrogram,
-            instrumentVisualization;
+            instrumentVisualization,
+            asNEAT;
 
         $(function() {
           var Utils = require('asNEAT/utils')['default'],
               log = Utils.log,
               Network = require('asNEAT/network')['default'],
               Visualizer = require('asNEAT/asNEAT-visualizer')['default'];
+
+          asNEAT = require('asNEAT/asNEAT')['default'];
           network = new Network()
             .addOscillator()
             .addOscillator()
@@ -177,6 +181,10 @@
             instrumentVisualization.hideNetwork();
           });
         }
+        $('button.panic').click(function() {
+          asNEAT.resetGlobalOutNode();
+          updateVisualization();
+        });
 
         function updateVisualization() {
             multiVisualization.refresh();

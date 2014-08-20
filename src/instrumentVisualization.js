@@ -225,7 +225,7 @@ InstrumentVisualization.prototype.playStart = function() {
   analyserNode.fftSize = this.fftSize;
   this.analyserNode = analyserNode;
 
-  outNode.node.connect(analyserNode);
+  outNode.secondaryNode.connect(analyserNode);
   analyserNode.connect(jsNode);
 
   var blankArray = new Uint8Array(analyserNode.frequencyBinCount),

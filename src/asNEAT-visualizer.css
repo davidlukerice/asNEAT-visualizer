@@ -51,4 +51,5 @@ svg.asNEATForceVis .labels .label {
   margin: 10px;
   padding: 5px;
   pointer-events: none;
+  z-index:1000;
 }

@@ -122,7 +122,9 @@
           liveSpectrogram.start();
 
           forceVisualization = Visualizer.createForceVisualization({
-            network: network
+            network: network,
+            width: '300px',
+            height: '200px'
           });
           forceVisualization.init();
           forceVisualization.start();

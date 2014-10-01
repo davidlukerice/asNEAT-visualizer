@@ -88,8 +88,8 @@ define("asNEAT/forceVisualization",
           .attr('xmlns', 'http://www.w3.org/2000/svg')
           .attr('version', '1.1')
           .attr('xml:space', 'preserve')
-          .attr('class', 'asNEATForceVis');
-
+          .attr('class', 'asNEATForceVis')
+          .attr('style', 'height:'+this.height+'; width:'+this.width+';');
       // Have the back group watch for zoom events and move the forward group.
       // This fixes the issue of dragging a node also call the zoom events
       var backG = svg.append('g')
@@ -212,7 +212,11 @@ define("asNEAT/forceVisualization",
     };
 
     ForceVisualization.prototype.getRect = function() {
-      return this.svg[0][0].getClientRects()[0];
+      var $svg = $(this.svg[0][0]);
+      return {
+        width: $svg.width(),
+        height: $svg.height()
+      };
     };
 
     ForceVisualization.prototype.startForceLayout = function() {

@@ -137,7 +137,7 @@ define("asNEAT/forceVisualization",
       // Create a highlight filter that creates an
       // orangish shadow under the element
       var hFilter = defs.append('filter')
-        .attr('id', 'asNEAT-force-viz-')
+        .attr('id', 'asNEAT-force-viz-highlight')
         .attr('height', '200%')
         .attr('width', '200%')
         .attr('x', "-50%").attr('y', "-50%");
@@ -350,8 +350,10 @@ define("asNEAT/forceVisualization",
         .attr('filter', getConnectionFilter)
         .on("mouseover", function(d, i){
           parameterToolTip
-            .attr('x', (d.target.x+d.source.x)/2)
-            .attr('y', (d.target.y+d.source.y)/2);
+            .css({
+              'left': (d.target.x+d.source.x)/2 + self.translation[0],
+              'top': (d.target.y+d.source.y)/2 + self.translation[1]
+            });
           var html = buildParameterHtml(d.asNEATConnection.getParameters());
           parameterToolTip
             .html(html)

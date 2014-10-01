@@ -21,6 +21,8 @@ ForceVisualization.prototype.init = function() {
   this.vNodes = [];
   this.vConnections = [];
   this.forceLayout = null;
+  this.translation = [0,0];
+  this.parameterToolTip = null;
 };
 
 ForceVisualization.prototype.start = function() {
@@ -30,12 +32,18 @@ ForceVisualization.prototype.start = function() {
     .append('svg')
       .attr('width', this.width)
       .attr('height', this.height)
-      .attr('pointer-events', 'all');
+      .attr('pointer-events', 'all')
+      .attr('preserveAspectRatio', 'none')
+      .attr('xmlns', 'http://www.w3.org/2000/svg')
+      .attr('version', '1.1')
+      .attr('xml:space', 'preserve')
+      .attr('class', 'asNEATForceVis');
 
   // Have the back group watch for zoom events and move the forward group.
   // This fixes the issue of dragging a node also call the zoom events
   var backG = svg.append('g')
       .call(d3.behavior.zoom().on('zoom', function() {
+        self.translation = d3.event.translate;
         frontG.attr("transform",
           "translate(" + d3.event.translate + ")" +
           " scale(" + d3.event.scale + ")");
@@ -51,19 +59,10 @@ ForceVisualization.prototype.start = function() {
   frontG.append('g').attr('class', 'labels');
   frontG.append('g').attr('class', 'nodes');
 
-  frontG.append('foreignObject')
-    .attr('class', 'parameterToolTip')
-    .attr("width", 240)
-    .attr("height", 500)
-    .append("xhtml:body")
-      .style({
-        'display': 'none',
-        'font': "14px 'Helvetica Neue'",
-        'border-radius': '5px',
-        'background': 'rgba(180, 180, 180, 0.9)',
-        'margin': '10px',
-        'padding': '5px'
-      });
+  this.parameterToolTip = $('<div></div>')
+    .addClass('asNEATParameterToolTip')
+    .hide();
+  $(this.selector).append(this.parameterToolTip);
 
   this.svg = svg;
   this.g = frontG;
@@ -119,6 +118,10 @@ ForceVisualization.prototype.start = function() {
     self.refresh();
   };
   $(window).on('resize', this.onResize);
+
+  window.setTimeout(function() {
+    $(window).resize();
+  }, 200);
 };
 ForceVisualization.prototype.stop = function() {
   $(window).off('resize', this.onResize);
@@ -209,7 +212,8 @@ ForceVisualization.prototype.startForceLayout = function() {
 };
 
 ForceVisualization.prototype.refresh = function() {
-  var vNodes = this.vNodes,
+  var self = this,
+      vNodes = this.vNodes,
       vConnections = this.vConnections,
       animateSpeed = this.animateSpeed,
       rect = this.getRect();
@@ -278,6 +282,11 @@ ForceVisualization.prototype.refresh = function() {
   var connections = this.svg.select('.connections').selectAll('.connection')
     .data(vConnections, getConnectionId);
 
+  var parameterToolTip = this.parameterToolTip;
+  var color = d3.scale.category20();
+  var node = this.svg.select('.nodes').selectAll('.node')
+    .data(vNodes, getNodeId);
+
   connections.enter().append("path")
     .attr('class', "connection")
     .style('stroke', getConnectionColor)
@@ -289,14 +298,14 @@ ForceVisualization.prototype.refresh = function() {
         .attr('x', (d.target.x+d.source.x)/2)
         .attr('y', (d.target.y+d.source.y)/2);
       var html = buildParameterHtml(d.asNEATConnection.getParameters());
-      parameterToolTipHtml
+      parameterToolTip
         .html(html)
-        .style("display", "inline-block");
+        .show();
     })
     .on("mouseout", function(d) {
-      parameterToolTipHtml
+      parameterToolTip
         .html('')
-        .style("display", "none");
+        .hide();
     });
 
   connections.transition()
@@ -305,13 +314,6 @@ ForceVisualization.prototype.refresh = function() {
     .style('stroke-dasharray', getDashArray)
     .attr("marker-end", getMarker)
     .attr('filter', getConnectionFilter);
-
-  var parameterToolTip = this.svg.select('.parameterToolTip');
-  var parameterToolTipHtml = parameterToolTip.select('body');
-
-  var color = d3.scale.category20();
-  var node = this.svg.select('.nodes').selectAll('.node')
-    .data(vNodes, getNodeId);
 
   node.enter().append("circle")
     .attr("class", "node")
@@ -322,17 +324,19 @@ ForceVisualization.prototype.refresh = function() {
     .call(forceLayout.drag)
     .on("mouseover", function(d, i){
       parameterToolTip
-        .attr('x', d.x)
-        .attr('y', d.y);
+        .css({
+          'left': d.x + self.translation[0],
+          'top': d.y + self.translation[1]
+        });
       var html = buildParameterHtml(d.asNEATNode.getParameters());
-      parameterToolTipHtml
+      parameterToolTip
         .html(html)
-        .style("display", "inline-block");
+        .show();
     })
     .on("mouseout", function(d) {
-      parameterToolTipHtml
+      parameterToolTip
         .html('')
-        .style("display", "none");
+        .hide();
     });
   node.transition()
     .duration(animateSpeed)

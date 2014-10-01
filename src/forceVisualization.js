@@ -299,8 +299,10 @@ ForceVisualization.prototype.refresh = function() {
     .attr('filter', getConnectionFilter)
     .on("mouseover", function(d, i){
       parameterToolTip
-        .attr('x', (d.target.x+d.source.x)/2)
-        .attr('y', (d.target.y+d.source.y)/2);
+        .css({
+          'left': (d.target.x+d.source.x)/2 + self.translation[0],
+          'top': (d.target.y+d.source.y)/2 + self.translation[1]
+        });
       var html = buildParameterHtml(d.asNEATConnection.getParameters());
       parameterToolTip
         .html(html)

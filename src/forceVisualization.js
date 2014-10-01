@@ -86,7 +86,7 @@ ForceVisualization.prototype.start = function() {
   // Create a highlight filter that creates an
   // orangish shadow under the element
   var hFilter = defs.append('filter')
-    .attr('id', 'asNEAT-force-viz-')
+    .attr('id', 'asNEAT-force-viz-highlight')
     .attr('height', '200%')
     .attr('width', '200%')
     .attr('x', "-50%").attr('y', "-50%");

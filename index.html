@@ -34,6 +34,10 @@
     <button class="mutateWeight">Mutate Weights</button>
     <button class="mutateNodeParameters">Mutate Node parameter</button>
     <br>
+    <button class='new'>new</button>
+    <button class='new10'>new x10</button>
+    <button class='new30'>new x30</button>
+    <br>
     <button class="panic">Panic!</button>
     <br>
     <br>
@@ -85,12 +89,25 @@
 
       !function() {
         $(function() {
+          newInstrument();
+          setupHandlers();
+        });
+
+        function newInstrument() {
           var Utils = require('asNEAT/utils')['default'],
               log = Utils.log,
               Network = require('asNEAT/network')['default'],
-              Visualizer = require('asNEAT/asNEAT-visualizer')['default'];
+              Visualizer = require('asNEAT/asNEAT-visualizer')['default'],
+              asNEAT = require('asNEAT/asNEAT')['default'];
 
-          asNEAT = require('asNEAT/asNEAT')['default'];
+          if (network) {
+            instrumentVisualization.stop();
+            multiVisualization.stop();
+            offlineSpectrogram.stop();
+            liveSpectrogram.stop();
+            forceVisualization.stop();
+          }
+
           network = new Network()
             .addOscillator()
             .addOscillator()
@@ -130,8 +147,7 @@
           forceVisualization.start();
 
           updateVisualization();
-          setupHandlers();
-        });
+        }
 
         function setupHandlers() {
           var stopFunc = null;
@@ -182,11 +198,28 @@
           $('button.hideNetwork').click(function() {
             instrumentVisualization.hideNetwork();
           });
+          $('button.panic').click(function() {
+            asNEAT.resetOutNodes();
+            updateVisualization();
+          });
+          $('button.new').click(function() {
+            newInstrument();
+          });
+          $('button.new10').click(function() {
+            for (var i=0; i<10; ++i) {
+              setTimeout(function() {
+                newInstrument();
+              });
+            }
+          });
+          $('button.new30').click(function() {
+            for (var i=0; i<30; ++i) {
+              setTimeout(function() {
+                newInstrument();
+              });
+            }
+          });
         }
-        $('button.panic').click(function() {
-          asNEAT.resetOutNodes();
-          updateVisualization();
-        });
 
         function updateVisualization() {
             multiVisualization.refresh();

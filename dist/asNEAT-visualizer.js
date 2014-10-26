@@ -594,84 +594,84 @@ define("asNEAT/instrumentVisualization",
 
     var id = 0;
     InstrumentVisualization.prototype.init = function() {
-      //var canvas = document.createElement('canvas'),
-      //    ctx = canvas.getContext('2d'),
-      //    tempCanvas = document.createElement('canvas'),
-      //    tempCtx = tempCanvas.getContext('2d'),
-      //    networkDiv = document.createElement('div');
-      //this.canvas = canvas;
-      //this.ctx = ctx;
-      //this.tempCanvas = tempCanvas;
-      //this.tempCtx = tempCtx;
-      //this.networkDiv = networkDiv;
+      var canvas = document.createElement('canvas'),
+          ctx = canvas.getContext('2d'),
+          tempCanvas = document.createElement('canvas'),
+          tempCtx = tempCanvas.getContext('2d'),
+          networkDiv = document.createElement('div');
+      this.canvas = canvas;
+      this.ctx = ctx;
+      this.tempCanvas = tempCanvas;
+      this.tempCtx = tempCtx;
+      this.networkDiv = networkDiv;
 
-      //this.$canvas = $(canvas);
-      //this.$tempCanvas = $(tempCanvas);
-      //this.networkDivClass = 'network'+(++id);
-      //$(this.selector)
-      //  .addClass('asNEATInstrumentVis');
-      //this.$networkDiv = $(networkDiv)
-      //  .addClass(this.networkDivClass)
-      //  .addClass('asNEATInstrumentVisNetwork')
-      //  .hide();
-    //
-      //this.colorScale = new chroma.scale(
-      //  this.colorScaleColors,
-      //  this.colorScalePositions);
-      //this.colorScale.domain([0, 300]);
+      this.$canvas = $(canvas);
+      this.$tempCanvas = $(tempCanvas);
+      this.networkDivClass = 'network'+(++id);
+      $(this.selector)
+        .addClass('asNEATInstrumentVis');
+      this.$networkDiv = $(networkDiv)
+        .addClass(this.networkDivClass)
+        .addClass('asNEATInstrumentVisNetwork')
+        .hide();
+
+      this.colorScale = new chroma.scale(
+        this.colorScaleColors,
+        this.colorScalePositions);
+      this.colorScale.domain([0, 300]);
 
       this.outNode = this.network.nodes[0];
     };
 
     InstrumentVisualization.prototype.start = function() {
       var self = this,
-          //canvas = this.canvas,
-          //ctx = this.ctx,
-          //tempCanvas = this.tempCanvas,
-          //tempCtx = this.tempCtx,
+          canvas = this.canvas,
+          ctx = this.ctx,
+          tempCanvas = this.tempCanvas,
+          tempCtx = this.tempCtx,
           outNode = this.outNode,
           jsNode, analyserNode;
 
-      //$(this.selector).append(this.$canvas);
-      //$(this.selector).append(this.$networkDiv);
-    //
-      //this.$canvas.css({
-      //  width: this.width,
-      //  height: this.height
-      //});
-      //this.$tempCanvas.css({
-      //  width: this.width,
-      //  height: this.fftSize
-      //});
+      $(this.selector).append(this.$canvas);
+      $(this.selector).append(this.$networkDiv);
+
+      this.$canvas.css({
+        width: this.width,
+        height: this.height
+      });
+      this.$tempCanvas.css({
+        width: this.width,
+        height: this.fftSize
+      });
 
       var oldBounds = self.getBounds();
       this.fftSize = roundToPowerOf2(oldBounds.height);
-      //canvas.width = oldBounds.width;
-      //canvas.height = oldBounds.height;
-      //tempCanvas.width =  oldBounds.width;
-      //tempCanvas.height = this.fftSize/2;
-      //this.onResize = function() {
-      //  var bounds = self.getBounds();
-      //  tempCtx.drawImage(canvas,
-      //    0, 0, canvas.width, canvas.height,
-      //    0, 0, tempCanvas.width, tempCanvas.height);
-      //  canvas.width = bounds.width;
-      //  canvas.height = bounds.height;
-      //  oldBounds = bounds;
-      //  clear();
-      //  ctx.drawImage(tempCanvas,
-      //    0, 0, tempCanvas.width, tempCanvas.height,
-      //    0, 0, canvas.width, canvas.height);
-      //  tempCanvas.width = bounds.width;
-      //  tempCanvas.height = self.fftSize/2;
-      //};
-      //$(window).on('resize', this.onResize);
+      canvas.width = oldBounds.width;
+      canvas.height = oldBounds.height;
+      tempCanvas.width =  oldBounds.width;
+      tempCanvas.height = this.fftSize/2;
+      this.onResize = function() {
+        var bounds = self.getBounds();
+        tempCtx.drawImage(canvas,
+          0, 0, canvas.width, canvas.height,
+          0, 0, tempCanvas.width, tempCanvas.height);
+        canvas.width = bounds.width;
+        canvas.height = bounds.height;
+        oldBounds = bounds;
+        clear();
+        ctx.drawImage(tempCanvas,
+          0, 0, tempCanvas.width, tempCanvas.height,
+          0, 0, canvas.width, canvas.height);
+        tempCanvas.width = bounds.width;
+        tempCanvas.height = self.fftSize/2;
+      };
+      $(window).on('resize', this.onResize);
 
-      //function clear() {
-      //  ctx.fillStyle=self.colorScale(0).hex();
-      //  ctx.fillRect(0,0,oldBounds.width,oldBounds.height);
-      //}
-      //clear();
+      function clear() {
+        ctx.fillStyle=self.colorScale(0).hex();
+        ctx.fillRect(0,0,oldBounds.width,oldBounds.height);
+      }
+      clear();
 
       jsNode = keep(context.createScriptProcessor(2048, 1, 1));
       jsNode.connect(context.destination);
@@ -687,7 +687,7 @@ define("asNEAT/instrumentVisualization",
       var tempFrontGain = context.createGain();
       tempFrontGain.gain.value = 1.0;
 
-      //outNode.node = tempFrontGain;
+      outNode.node = tempFrontGain;
       outNode.node.connect(analyserNode);
       analyserNode.connect(jsNode);
 
@@ -696,7 +696,7 @@ define("asNEAT/instrumentVisualization",
           numRepeats = 0,
           numBlank = 0,
           blankStepsUntilPause = this.blankStepsUntilPause;
-      /*
+
       jsNode.onaudioprocess = function() {
         var freqData = new Uint8Array(analyserNode.frequencyBinCount);
         analyserNode.getByteFrequencyData(freqData);
@@ -711,20 +711,20 @@ define("asNEAT/instrumentVisualization",
           ++numRepeats;
           if (numRepeats >= 2) {
             ++numBlank;
-            if (numBlank < blankStepsUntilPause) {}
-            //  self.initUpdateCanvas(blankArray);
+            if (numBlank < blankStepsUntilPause)
+              self.initUpdateCanvas(blankArray);
             else
               clearProcessing();
           }
           else {
-            //self.initUpdateCanvas(freqData);
+            self.initUpdateCanvas(freqData);
             numBlank = 0;
           }
         }
         else {
           numRepeats = 0;
           numBlank = 0;
-          //self.initUpdateCanvas(freqData);
+          self.initUpdateCanvas(freqData);
         }
 
         lastSum = sum;
@@ -734,11 +734,11 @@ define("asNEAT/instrumentVisualization",
         jsNode.onaudioprocess = null;
         drop(jsNode);
       }
-    */
+
       this.network.play();
       outNode.node = oldNode;
 
-      //this.playStart();
+      this.playStart();
     };
 
     /**
@@ -766,10 +766,10 @@ define("asNEAT/instrumentVisualization",
 
     InstrumentVisualization.prototype.playStart = function() {
       var self = this,
-          //canvas = this.canvas,
-          //ctx = this.ctx,
-          //tempCanvas = this.tempCanvas,
-          //tempCtx = this.tempCtx,
+          canvas = this.canvas,
+          ctx = this.ctx,
+          tempCanvas = this.tempCanvas,
+          tempCtx = this.tempCtx,
           outNode = this.outNode,
           jsNode, analyserNode;
 
@@ -808,18 +808,18 @@ define("asNEAT/instrumentVisualization",
           ++numBlank;
 
           if (numRepeats >= numAllowedRepeats) {
-            //if (numBlank < blankStepsUntilPause)
-            //  self.updateCanvas(blankArray);
+            if (numBlank < blankStepsUntilPause)
+              self.updateCanvas(blankArray);
           }
           else {
-            //self.updateCanvas(freqData);
+            self.updateCanvas(freqData);
             numBlank = 0;
           }
         }
         else {
           numRepeats = 0;
           numBlank = 0;
-          //self.updateCanvas(freqData);
+          self.updateCanvas(freqData);
         }
 
         lastSum = sum;
@@ -854,11 +854,11 @@ define("asNEAT/instrumentVisualization",
     };
 
     InstrumentVisualization.prototype.stop = function() {
-      //this.$canvas.remove();
-      //$(window).off('resize', this.onResize);
-      //this.jsNode.disconnect(context.destination);
-      //this.analyserNode.disconnect(this.jsNode);
-      //drop(this.jsNode);
+      this.$canvas.remove();
+      $(window).off('resize', this.onResize);
+      this.jsNode.disconnect(context.destination);
+      this.analyserNode.disconnect(this.jsNode);
+      drop(this.jsNode);
     };
 
     InstrumentVisualization.prototype.refresh = function() {
@@ -890,7 +890,7 @@ define("asNEAT/instrumentVisualization",
     };
 
     InstrumentVisualization.prototype.getBounds = function() {
-      return {height:256, width:256};//this.canvas.getClientRects()[0];
+      return this.canvas.getClientRects()[0];
     };
 
     function shiftTempCanvasLeft() {

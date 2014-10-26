@@ -23,9 +23,9 @@
     <script src="./dist/asNEAT-visualizer.js"></script>
   </head>
   <body>
-    <h1>asNEAT-visualizer <small>https://github.com/davidlukerice/asNEAT-visualizer</small></h1>
+    <h1>asNEAT-visualizer v0.4.4<small>https://github.com/davidlukerice/asNEAT-visualizer</small></h1>
     <h2>Test Page</h2>
-
+    <br>
     <h2>Controls</h2>
     <button class='play'>play</button>
     <button class='playHold'>playHold</button>
@@ -104,10 +104,10 @@
 
           if (network) {
             instrumentVisualization.stop();
-            //multiVisualization.stop();
-            //offlineSpectrogram.stop();
-            //liveSpectrogram.stop();
-            //forceVisualization.stop();
+            multiVisualization.stop();
+            offlineSpectrogram.stop();
+            liveSpectrogram.stop();
+            forceVisualization.stop();
           }
 
           network = new Network()
@@ -122,33 +122,33 @@
           instrumentVisualization.init();
           instrumentVisualization.start();
 
-          //multiVisualization = Visualizer.createMultiVisualization({
-          //  network: network
-          //});
-          //multiVisualization.init();
-          //multiVisualization.start();
-//
-          //offlineSpectrogram = Visualizer.createOfflineSpectrogram({
-          //  network: network
-          //});
-          //offlineSpectrogram.init();
-          //offlineSpectrogram.start();
-//
-          //liveSpectrogram = Visualizer.createLiveSpectrogram({
-          //  network: network
-          //});
-          //liveSpectrogram.init();
-          //liveSpectrogram.start();
-//
-          //forceVisualization = Visualizer.createForceVisualization({
-          //  network: network,
-          //  width: '300px',
-          //  height: '200px'
-          //});
-          //forceVisualization.init();
-          //forceVisualization.start();
-//
-          //updateVisualization();
+          multiVisualization = Visualizer.createMultiVisualization({
+            network: network
+          });
+          multiVisualization.init();
+          multiVisualization.start();
+
+          offlineSpectrogram = Visualizer.createOfflineSpectrogram({
+            network: network
+          });
+          offlineSpectrogram.init();
+          offlineSpectrogram.start();
+
+          liveSpectrogram = Visualizer.createLiveSpectrogram({
+            network: network
+          });
+          liveSpectrogram.init();
+          liveSpectrogram.start();
+
+          forceVisualization = Visualizer.createForceVisualization({
+            network: network,
+            width: '300px',
+            height: '200px'
+          });
+          forceVisualization.init();
+          forceVisualization.start();
+
+          updateVisualization();
         }
 
         function setupHandlers() {

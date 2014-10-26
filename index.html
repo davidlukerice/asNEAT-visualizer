@@ -1,79 +1,235 @@
 <!DOCTYPE html>
 <html>
-
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Asneat-visualizer : A set of visualizations for an asNEAT network">
+    <meta charset="UTF8">
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    <title>asNEAT-visualizer Demo</title>
 
-    <title>Asneat-visualizer</title>
+    <style>
+      .network svg {
+        border: 1px solid black;
+      }
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="./dist/asNEAT-visualizer.css">
+
+    <script src="./vendor/jquery/dist/jquery.js"></script>
+    <script src="./vendor/d3/d3.js"></script>
+    <script src="./vendor/chroma-js/chroma.min.js"></script>
+    <script src="./vendor/lodash/dist/lodash.min.js"></script>
+
+    <script src="./vendor/loader.js"></script>
+    <script src="./vendor/asNEAT/dist/asNEAT.js"></script>
+    <script src="./dist/asNEAT-visualizer.js"></script>
   </head>
-
   <body>
+    <h1>asNEAT-visualizer <small>https://github.com/davidlukerice/asNEAT-visualizer</small></h1>
+    <h2>Test Page</h2>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/davidlukerice/asNEAT-visualizer">View on GitHub</a>
+    <h2>Controls</h2>
+    <button class='play'>play</button>
+    <button class='playHold'>playHold</button>
+    <button class="randomMutate">Random Mutate</button>
+    <button class="splitMutate">split Mutate</button>
+    <button class="addOscillator">add Oscillator</button>
+    <button class="addConnection">Add Connection</button>
+    <button class="mutateWeight">Mutate Weights</button>
+    <button class="mutateNodeParameters">Mutate Node parameter</button>
+    <br>
+    <button class='new'>new</button>
+    <button class='new10'>new x10</button>
+    <button class='new30'>new x30</button>
+    <br>
+    <button class="panic">Panic!</button>
+    <br>
+    <br>
 
-          <h1 id="project_title">Asneat-visualizer</h1>
-          <h2 id="project_tagline">A set of visualizations for an asNEAT network</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/davidlukerice/asNEAT-visualizer/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/davidlukerice/asNEAT-visualizer/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
+    <h2>Instrument Visualization</h2>
+    <button class="showNetwork">Show Network</button>
+    <button class="hideNetwork">Hide Network</button>
+    <br>
+    <div class="instrumentVisualization" style="width:30%; height:300px">
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
-
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
-
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
-
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
-
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
+    <h2>Offline Spectrogram</h2>
+    <div class="offlineSpectrogram">
     </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Asneat-visualizer maintained by <a href="https://github.com/davidlukerice">davidlukerice</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
+    <h2>Multi Visualization</h2>
+    <button class="nextVisualization">Next Visualization</button><br>
+    <div class="multiVisualizationContainer" style="width:500px;height:500px;">
+      <div class="multiVisualization">
+      </div>
     </div>
 
-    
+    <h2>Live Spectrogram</h2>
+    <div class="liveSpectrogram">
+    </div>
+
+    <h2>Force Visualization</h2>
+    <div class="forceNetwork">
+    </div>
+
+    <h2>toString</h2>
+    <div class="networkToString">
+    </div>
+
+    <br>
+    <br>
+    <h2>Log</h2>
+    <div class="log">
+    </div>
+
+    <script type="text/javascript">
+      var network,
+          multiVisualization,
+          forceVisualization,
+          offlineSpectrogram,
+          liveSpectrogram,
+          instrumentVisualization,
+          asNEAT;
+
+      !function() {
+        $(function() {
+          newInstrument();
+          setupHandlers();
+        });
+
+        function newInstrument() {
+          var Utils = require('asNEAT/utils')['default'],
+              log = Utils.log,
+              Network = require('asNEAT/network')['default'],
+              Visualizer = require('asNEAT/asNEAT-visualizer')['default'],
+              asNEAT = require('asNEAT/asNEAT')['default'];
+
+          if (network) {
+            instrumentVisualization.stop();
+            //multiVisualization.stop();
+            //offlineSpectrogram.stop();
+            //liveSpectrogram.stop();
+            //forceVisualization.stop();
+          }
+
+          network = new Network()
+            .addOscillator()
+            .addOscillator()
+            .splitMutation()
+            .splitMutation();
+
+          instrumentVisualization = Visualizer.createInstrumentVisualization({
+            network: network
+          });
+          instrumentVisualization.init();
+          instrumentVisualization.start();
+
+          //multiVisualization = Visualizer.createMultiVisualization({
+          //  network: network
+          //});
+          //multiVisualization.init();
+          //multiVisualization.start();
+//
+          //offlineSpectrogram = Visualizer.createOfflineSpectrogram({
+          //  network: network
+          //});
+          //offlineSpectrogram.init();
+          //offlineSpectrogram.start();
+//
+          //liveSpectrogram = Visualizer.createLiveSpectrogram({
+          //  network: network
+          //});
+          //liveSpectrogram.init();
+          //liveSpectrogram.start();
+//
+          //forceVisualization = Visualizer.createForceVisualization({
+          //  network: network,
+          //  width: '300px',
+          //  height: '200px'
+          //});
+          //forceVisualization.init();
+          //forceVisualization.start();
+//
+          //updateVisualization();
+        }
+
+        function setupHandlers() {
+          var stopFunc = null;
+          $('button.play').click(function() {
+            network.play();
+          });
+          $('button.playHold').on('mousedown',function() {
+            if (stopFunc != null)
+              stopFunc();
+            stopFunc = network.playHold();
+          }).on('mouseup', function() {
+            stopFunc();
+            stopFunc = null;
+          });
+          $('button.splitMutate').click(function() {
+            network.splitMutation();
+            updateVisualization();
+          });
+
+          $('button.randomMutate').click(function() {
+            network.mutate();
+            updateVisualization();
+          });
+          $('button.addOscillator').click(function() {
+            network.addOscillator();
+            updateVisualization();
+          });
+          $('button.addConnection').click(function() {
+            network.addConnection();
+            updateVisualization();
+          });
+          $('button.mutateWeight').click(function() {
+            network.mutateConnectionWeights();
+            updateVisualization();
+          });
+          $('button.mutateNodeParameters').click(function() {
+            network.mutateNodeParameters();
+            updateVisualization();
+          });
+
+          $('button.nextVisualization').click(function() {
+            multiVisualization.nextVisualization();
+          });
+
+          $('button.showNetwork').click(function() {
+            instrumentVisualization.showNetwork();
+          });
+          $('button.hideNetwork').click(function() {
+            instrumentVisualization.hideNetwork();
+          });
+          $('button.panic').click(function() {
+            asNEAT.resetOutNodes();
+            updateVisualization();
+          });
+          $('button.new').click(function() {
+            newInstrument();
+          });
+          $('button.new10').click(function() {
+            for (var i=0; i<10; ++i) {
+              setTimeout(function() {
+                newInstrument();
+              });
+            }
+          });
+          $('button.new30').click(function() {
+            for (var i=0; i<30; ++i) {
+              setTimeout(function() {
+                newInstrument();
+              });
+            }
+          });
+        }
+
+        function updateVisualization() {
+            multiVisualization.refresh();
+            forceVisualization.refresh();
+            $('.networkToString').html(network.toString());
+          }
+      }();
+    </script>
 
   </body>
 </html>

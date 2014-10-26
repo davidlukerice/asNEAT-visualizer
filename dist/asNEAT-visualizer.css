@@ -1,0 +1,56 @@
+
+svg.asNEATForceVis {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+svg.asNEATForceVis marker#asNEAT-force-viz-enabled {
+  fill: black;
+}
+svg.asNEATForceVis marker#asNEAT-force-viz-disabled {
+  fill: #aaa;
+}
+svg.asNEATForceVis .connections .connection {
+  stroke-width: 3;
+}
+
+svg.asNEATForceVis .nodes .node {
+  stroke-width: 2;
+}
+
+svg.asNEATForceVis .nodes .node:hover {
+  fill: #aaa;
+}
+
+svg.asNEATForceVis .labels .label {
+  text-anchor: middle;
+  font-size: 10px;
+}
+
+.asNEATInstrumentVis {
+  position: relative;
+}
+
+.asNEATInstrumentVis .asNEATInstrumentVisNetwork {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+}
+
+.asNEATParameterToolTip {
+  position: absolute;
+  font: 14px 'Helvetica Neue';
+  border-radius: 5px;
+  background: rgba(180, 180, 180, 0.9);
+  margin: 10px;
+  padding: 5px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index:1000;
+}

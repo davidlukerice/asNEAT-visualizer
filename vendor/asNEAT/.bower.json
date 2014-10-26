@@ -1,0 +1,43 @@
+{
+  "name": "asNEAT",
+  "version": "0.4.4",
+  "homepage": "https://github.com/davidlukerice/asNEAT",
+  "authors": [
+    "David Rice <davidlukerice@gmail.com>"
+  ],
+  "description": "Audio Synthesis - NeuroEvolution of Augmenting Topologies built on the Web Audio API",
+  "main": "./dist/asNEAT.min.js",
+  "keywords": [
+    "asNEAT",
+    "Web",
+    "webaudio",
+    "Audio",
+    "Genetic",
+    "Programming",
+    "Evolution",
+    "NEAT",
+    "API"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "vendor",
+    "test",
+    "tests",
+    "src"
+  ],
+  "dependencies": {
+    "lodash": "~2.4.1",
+    "jquery": "~1.11.1"
+  },
+  "_release": "0.4.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.4.4",
+    "commit": "b221af6a82eae9cdd31490edc4bc38c3a6c45cc6"
+  },
+  "_source": "git://github.com/davidlukerice/asNEAT.git",
+  "_target": "~0.4.4",
+  "_originalSource": "asNEAT"
+}

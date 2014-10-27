@@ -1,4 +1,4 @@
-/* asNEAT-visualizer 0.4.4 2014-10-07 */
+/* asNEAT-visualizer 0.4.5 2014-10-27 */
 define("asNEAT/asNEAT-visualizer", 
   ["asNEAT/multiVisualization","asNEAT/networkVisualization","asNEAT/forceVisualization","asNEAT/offlineSpectrogram","asNEAT/liveSpectrogram","asNEAT/instrumentVisualization","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
@@ -675,12 +675,10 @@ define("asNEAT/instrumentVisualization",
 
       jsNode = keep(context.createScriptProcessor(2048, 1, 1));
       jsNode.connect(context.destination);
-      this.jsNode = jsNode;
 
       analyserNode = context.createAnalyser();
       analyserNode.smoothingTimeConstant = 0;
       analyserNode.fftSize = this.fftSize;
-      this.analyserNode = analyserNode;
 
       // swap out outnode with custom one with
       var oldNode = outNode.node;
@@ -714,7 +712,7 @@ define("asNEAT/instrumentVisualization",
             if (numBlank < blankStepsUntilPause)
               self.initUpdateCanvas(blankArray);
             else
-              clearProcessing();
+              self.clearInitProcessing();
           }
           else {
             self.initUpdateCanvas(freqData);
@@ -730,10 +728,15 @@ define("asNEAT/instrumentVisualization",
         lastSum = sum;
       };
 
-      function clearProcessing() {
-        jsNode.onaudioprocess = null;
-        drop(jsNode);
-      }
+      this.clearInitProcessing = function() {
+        // Don't null out onAudioProcess or drop the node...
+        // Even though it's more memory efficient, whenever chrome
+        // clears the node, chrome can crash...
+        //jsNode.onaudioprocess = null;
+        jsNode.disconnect();
+        analyserNode.disconnect();
+        //drop(jsNode);
+      };
 
       this.network.play();
       outNode.node = oldNode;
@@ -775,12 +778,10 @@ define("asNEAT/instrumentVisualization",
 
       jsNode = keep(context.createScriptProcessor(2048, 1, 1));
       jsNode.connect(context.destination);
-      this.jsNode = jsNode;
 
       analyserNode = context.createAnalyser();
       analyserNode.smoothingTimeConstant = 0;
       analyserNode.fftSize = this.fftSize;
-      this.analyserNode = analyserNode;
 
       outNode.secondaryNode.connect(analyserNode);
       analyserNode.connect(jsNode);
@@ -824,6 +825,13 @@ define("asNEAT/instrumentVisualization",
 
         lastSum = sum;
       };
+
+      this.clearProcessing = function() {
+        //jsNode.onaudioprocess = null;
+        jsNode.disconnect();
+        analyserNode.disconnect();
+        //drop(jsNode);
+      };
     };
 
     InstrumentVisualization.prototype.isShowingNetwork = false;
@@ -855,10 +863,10 @@ define("asNEAT/instrumentVisualization",
 
     InstrumentVisualization.prototype.stop = function() {
       this.$canvas.remove();
+      this.$networkDiv.remove();
       $(window).off('resize', this.onResize);
-      this.jsNode.disconnect(context.destination);
-      this.analyserNode.disconnect(this.jsNode);
-      drop(this.jsNode);
+      this.clearInitProcessing();
+      this.clearProcessing();
     };
 
     InstrumentVisualization.prototype.refresh = function() {

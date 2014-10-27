@@ -118,12 +118,10 @@ InstrumentVisualization.prototype.start = function() {
 
   jsNode = keep(context.createScriptProcessor(2048, 1, 1));
   jsNode.connect(context.destination);
-  this.jsNode = jsNode;
 
   analyserNode = context.createAnalyser();
   analyserNode.smoothingTimeConstant = 0;
   analyserNode.fftSize = this.fftSize;
-  this.analyserNode = analyserNode;
 
   // swap out outnode with custom one with
   var oldNode = outNode.node;
@@ -157,7 +155,7 @@ InstrumentVisualization.prototype.start = function() {
         if (numBlank < blankStepsUntilPause)
           self.initUpdateCanvas(blankArray);
         else
-          clearProcessing();
+          self.clearInitProcessing();
       }
       else {
         self.initUpdateCanvas(freqData);
@@ -173,10 +171,15 @@ InstrumentVisualization.prototype.start = function() {
     lastSum = sum;
   };
 
-  function clearProcessing() {
-    jsNode.onaudioprocess = null;
-    drop(jsNode);
-  }
+  this.clearInitProcessing = function() {
+    // Don't null out onAudioProcess or drop the node...
+    // Even though it's more memory efficient, whenever chrome
+    // clears the node, chrome can crash...
+    //jsNode.onaudioprocess = null;
+    jsNode.disconnect();
+    analyserNode.disconnect();
+    //drop(jsNode);
+  };
 
   this.network.play();
   outNode.node = oldNode;
@@ -218,12 +221,10 @@ InstrumentVisualization.prototype.playStart = function() {
 
   jsNode = keep(context.createScriptProcessor(2048, 1, 1));
   jsNode.connect(context.destination);
-  this.jsNode = jsNode;
 
   analyserNode = context.createAnalyser();
   analyserNode.smoothingTimeConstant = 0;
   analyserNode.fftSize = this.fftSize;
-  this.analyserNode = analyserNode;
 
   outNode.secondaryNode.connect(analyserNode);
   analyserNode.connect(jsNode);
@@ -267,6 +268,13 @@ InstrumentVisualization.prototype.playStart = function() {
 
     lastSum = sum;
   };
+
+  this.clearProcessing = function() {
+    jsNode.onaudioprocess = null;
+    jsNode.disconnect();
+    analyserNode.disconnect();
+    drop(jsNode);
+  };
 };
 
 InstrumentVisualization.prototype.isShowingNetwork = false;
@@ -300,9 +308,8 @@ InstrumentVisualization.prototype.stop = function() {
   this.$canvas.remove();
   this.$networkDiv.remove();
   $(window).off('resize', this.onResize);
-  this.jsNode.disconnect(context.destination);
-  this.analyserNode.disconnect(this.jsNode);
-  drop(this.jsNode);
+  this.clearInitProcessing();
+  this.clearProcessing();
 };
 
 InstrumentVisualization.prototype.refresh = function() {

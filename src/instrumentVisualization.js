@@ -270,10 +270,10 @@ InstrumentVisualization.prototype.playStart = function() {
   };
 
   this.clearProcessing = function() {
-    jsNode.onaudioprocess = null;
+    //jsNode.onaudioprocess = null;
     jsNode.disconnect();
     analyserNode.disconnect();
-    drop(jsNode);
+    //drop(jsNode);
   };
 };
 

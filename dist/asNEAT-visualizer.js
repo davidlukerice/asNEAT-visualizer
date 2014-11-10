@@ -1,4 +1,4 @@
-/* asNEAT-visualizer 0.4.5 2014-10-27 */
+/* asNEAT-visualizer 0.4.7 2014-11-10 */
 define("asNEAT/asNEAT-visualizer", 
   ["asNEAT/multiVisualization","asNEAT/networkVisualization","asNEAT/forceVisualization","asNEAT/offlineSpectrogram","asNEAT/liveSpectrogram","asNEAT/instrumentVisualization","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
@@ -577,6 +577,9 @@ define("asNEAT/instrumentVisualization",
 
     var InstrumentVisualization = function(parameters) {
       _.defaults(this, parameters, this.defaultParameters);
+      this.numUpdates = 0;
+      this.initCanvasX = 0;
+      this.isShowingNetwork = false;
     };
     InstrumentVisualization.prototype.defaultParameters = {
       network: null,
@@ -621,6 +624,12 @@ define("asNEAT/instrumentVisualization",
       this.colorScale.domain([0, 300]);
 
       this.outNode = this.network.nodes[0];
+
+      // Utilize a cloned network for the initial vis, since chrome has
+      // issues with multiple analyser/processors on the same out nodes
+      this.clonedNetwork = this.network.clone();
+      this.clonedOutNode = this.clonedNetwork.nodes[0];
+      this.clonedOutNode.node.disconnect();
     };
 
     InstrumentVisualization.prototype.start = function() {
@@ -629,7 +638,7 @@ define("asNEAT/instrumentVisualization",
           ctx = this.ctx,
           tempCanvas = this.tempCanvas,
           tempCtx = this.tempCtx,
-          outNode = this.outNode,
+          clonedOutNode = this.clonedOutNode,
           jsNode, analyserNode;
 
       $(this.selector).append(this.$canvas);
@@ -680,13 +689,7 @@ define("asNEAT/instrumentVisualization",
       analyserNode.smoothingTimeConstant = 0;
       analyserNode.fftSize = this.fftSize;
 
-      // swap out outnode with custom one with
-      var oldNode = outNode.node;
-      var tempFrontGain = context.createGain();
-      tempFrontGain.gain.value = 1.0;
-
-      outNode.node = tempFrontGain;
-      outNode.node.connect(analyserNode);
+      clonedOutNode.node.connect(analyserNode);
       analyserNode.connect(jsNode);
 
       var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
@@ -738,8 +741,7 @@ define("asNEAT/instrumentVisualization",
         //drop(jsNode);
       };
 
-      this.network.play();
-      outNode.node = oldNode;
+      this.clonedNetwork.play();
 
       this.playStart();
     };
@@ -747,7 +749,6 @@ define("asNEAT/instrumentVisualization",
     /**
       @param freqData {Uint8Array}
     */
-    InstrumentVisualization.prototype.initCanvasX = 0;
     InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
       // If the initial rendering runs into live updates, don't draw anything
       if (this.numUpdates + this.initCanvasX >= this.canvas.width)
@@ -834,7 +835,6 @@ define("asNEAT/instrumentVisualization",
       };
     };
 
-    InstrumentVisualization.prototype.isShowingNetwork = false;
     InstrumentVisualization.prototype.showNetwork = function() {
       if(this.isShowingNetwork)
         return;
@@ -875,7 +875,6 @@ define("asNEAT/instrumentVisualization",
         this.forceVis.refresh();
     };
 
-    InstrumentVisualization.prototype.numUpdates = 0;
     /**
       @param freqData {Uint8Array}
     */

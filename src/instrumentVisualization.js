@@ -20,6 +20,9 @@ var drop = function(node) {
 
 var InstrumentVisualization = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
+  this.numUpdates = 0;
+  this.initCanvasX = 0;
+  this.isShowingNetwork = false;
 };
 InstrumentVisualization.prototype.defaultParameters = {
   network: null,
@@ -190,7 +193,6 @@ InstrumentVisualization.prototype.start = function() {
 /**
   @param freqData {Uint8Array}
 */
-InstrumentVisualization.prototype.initCanvasX = 0;
 InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
   // If the initial rendering runs into live updates, don't draw anything
   if (this.numUpdates + this.initCanvasX >= this.canvas.width)
@@ -277,7 +279,6 @@ InstrumentVisualization.prototype.playStart = function() {
   };
 };
 
-InstrumentVisualization.prototype.isShowingNetwork = false;
 InstrumentVisualization.prototype.showNetwork = function() {
   if(this.isShowingNetwork)
     return;
@@ -318,7 +319,6 @@ InstrumentVisualization.prototype.refresh = function() {
     this.forceVis.refresh();
 };
 
-InstrumentVisualization.prototype.numUpdates = 0;
 /**
   @param freqData {Uint8Array}
 */

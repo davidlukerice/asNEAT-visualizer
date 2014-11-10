@@ -67,6 +67,12 @@ InstrumentVisualization.prototype.init = function() {
   this.colorScale.domain([0, 300]);
 
   this.outNode = this.network.nodes[0];
+
+  // Utilize a cloned network for the initial vis, since chrome has
+  // issues with multiple analyser/processors on the same out nodes
+  this.clonedNetwork = this.network.clone();
+  this.clonedOutNode = this.clonedNetwork.nodes[0];
+  this.clonedOutNode.node.disconnect();
 };
 
 InstrumentVisualization.prototype.start = function() {
@@ -75,7 +81,7 @@ InstrumentVisualization.prototype.start = function() {
       ctx = this.ctx,
       tempCanvas = this.tempCanvas,
       tempCtx = this.tempCtx,
-      outNode = this.outNode,
+      clonedOutNode = this.clonedOutNode,
       jsNode, analyserNode;
 
   $(this.selector).append(this.$canvas);
@@ -126,13 +132,7 @@ InstrumentVisualization.prototype.start = function() {
   analyserNode.smoothingTimeConstant = 0;
   analyserNode.fftSize = this.fftSize;
 
-  // swap out outnode with custom one with
-  var oldNode = outNode.node;
-  var tempFrontGain = context.createGain();
-  tempFrontGain.gain.value = 1.0;
-
-  outNode.node = tempFrontGain;
-  outNode.node.connect(analyserNode);
+  clonedOutNode.node.connect(analyserNode);
   analyserNode.connect(jsNode);
 
   var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
@@ -184,8 +184,7 @@ InstrumentVisualization.prototype.start = function() {
     //drop(jsNode);
   };
 
-  this.network.play();
-  outNode.node = oldNode;
+  this.clonedNetwork.play();
 
   this.playStart();
 };

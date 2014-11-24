@@ -5,10 +5,15 @@ import ForceVisualization from 'asNEAT/forceVisualization';
 import OfflineSpectrogram from 'asNEAT/offlineSpectrogram';
 import LiveSpectrogram from 'asNEAT/liveSpectrogram';
 import InstrumentVisualization from 'asNEAT/instrumentVisualization';
+import RequestAnimationInstrumentVisualization from 'asNEAT/requestAnimationInstrumentVisualization';
 var Visualizer = {};
 
 Visualizer.createInstrumentVisualization = function(parameters) {
     return new InstrumentVisualization(parameters);
+};
+
+Visualizer.createRequestAnimationInstrumentVisualization = function(parameters) {
+  return new RequestAnimationInstrumentVisualization(parameters);
 };
 
 Visualizer.createMultiVisualization = function(parameters) {

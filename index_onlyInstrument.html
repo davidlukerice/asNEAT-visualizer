@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF8">
+
+    <title>asNEAT-visualizer Demo</title>
+
+    <style>
+      .network svg {
+        border: 1px solid black;
+      }
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="./dist/asNEAT-visualizer.css">
+
+    <script src="./vendor/jquery/dist/jquery.js"></script>
+    <script src="./vendor/d3/d3.js"></script>
+    <script src="./vendor/chroma-js/chroma.min.js"></script>
+    <script src="./vendor/lodash/dist/lodash.min.js"></script>
+
+    <script src="./vendor/loader.js"></script>
+    <script src="./vendor/asNEAT/dist/asNEAT.js"></script>
+    <script src="./dist/asNEAT-visualizer.js"></script>
+  </head>
+  <body>
+
+    <h2>Controls</h2>
+    <button class='play'>play</button>
+    <button class='playHold'>playHold</button>
+    <button class="randomMutate">Random Mutate</button>
+    <button class="splitMutate">split Mutate</button>
+    <button class="addOscillator">add Oscillator</button>
+    <button class="addConnection">Add Connection</button>
+    <button class="mutateWeight">Mutate Weights</button>
+    <button class="mutateNodeParameters">Mutate Node parameter</button>
+    <br>
+    <button class='new'>new</button>
+    <button class='new10'>new x10</button>
+    <button class='new30'>new x30</button>
+    <br>
+    <button class="panic">Panic!</button>
+    <br>
+    <br>
+
+    <h2>Instrument Visualization</h2>
+    <button class="showNetwork">Show Network</button>
+    <button class="hideNetwork">Hide Network</button>
+    <br>
+    <span class="instrumentVisualization" style="width:300px; height:300px">
+    </span>
+    ...
+    <span class="requestAnimationInstrumentVisualization" style="width:300px; height:300px">
+    </span>
+
+    <h2>toString</h2>
+    <div class="networkToString">
+    </div>
+
+    <br>
+    <br>
+    <h2>Log</h2>
+    <div class="log">
+    </div>
+
+    <script type="text/javascript">
+      var network,
+          instrumentVisualization,
+          requestAnimationInstrumentVisualization,
+          asNEAT;
+
+      !function() {
+        $(function() {
+          newInstrument();
+          setupHandlers();
+        });
+
+        function newInstrument() {
+          var Utils = require('asNEAT/utils')['default'],
+              log = Utils.log,
+              Network = require('asNEAT/network')['default'],
+              Visualizer = require('asNEAT/asNEAT-visualizer')['default'];
+
+          asNEAT = require('asNEAT/asNEAT')['default'];
+
+          if (network) {
+            instrumentVisualization.stop();
+            requestAnimationInstrumentVisualization.stop();
+          }
+
+          network = new Network();
+          for (var i=0; i<10; ++i)
+            network.addOscillator();
+
+          instrumentVisualization = Visualizer.createInstrumentVisualization({
+            network: network,
+            height: 300,
+            width: 300
+          });
+          instrumentVisualization.init();
+          instrumentVisualization.start();
+
+          requestAnimationInstrumentVisualization = Visualizer.createRequestAnimationInstrumentVisualization({
+            network: network,
+            height: 300,
+            width: 300
+          });
+          requestAnimationInstrumentVisualization.init();
+          requestAnimationInstrumentVisualization.start();
+
+          updateVisualization();
+        }
+
+        function setupHandlers() {
+          var stopFunc = null;
+          $('button.play').click(function() {
+            network.play();
+          });
+          $('button.playHold').on('mousedown',function() {
+            if (stopFunc != null)
+              stopFunc();
+            stopFunc = network.playHold();
+          }).on('mouseup', function() {
+            stopFunc();
+            stopFunc = null;
+          });
+          $('button.splitMutate').click(function() {
+            network.splitMutation();
+            updateVisualization();
+          });
+
+          $('button.randomMutate').click(function() {
+            network.mutate();
+            updateVisualization();
+          });
+          $('button.addOscillator').click(function() {
+            network.addOscillator();
+            updateVisualization();
+          });
+          $('button.addConnection').click(function() {
+            network.addConnection();
+            updateVisualization();
+          });
+          $('button.mutateWeight').click(function() {
+            network.mutateConnectionWeights();
+            updateVisualization();
+          });
+          $('button.mutateNodeParameters').click(function() {
+            network.mutateNodeParameters();
+            updateVisualization();
+          });
+
+          $('button.nextVisualization').click(function() {
+            multiVisualization.nextVisualization();
+          });
+
+          $('button.showNetwork').click(function() {
+            instrumentVisualization.showNetwork();
+          });
+          $('button.hideNetwork').click(function() {
+            instrumentVisualization.hideNetwork();
+          });
+          $('button.panic').click(function() {
+            asNEAT.resetOutNodes();
+            updateVisualization();
+          });
+          $('button.new').click(function() {
+            newInstrument();
+          });
+          $('button.new10').click(function() {
+            for (var i=0; i<10; ++i) {
+              setTimeout(function() {
+                newInstrument();
+              });
+            }
+          });
+          $('button.new30').click(function() {
+            asNEAT.globalGain.gain.value = 0;
+            for (var i=0; i<30; ++i) {
+              setTimeout(function() {
+                newInstrument();
+                network.play();
+              });
+            }
+          });
+        }
+
+        function updateVisualization() {
+            $('.networkToString').html(network.toString());
+          }
+      }();
+    </script>
+
+  </body>
+</html>

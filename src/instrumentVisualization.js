@@ -125,7 +125,8 @@ InstrumentVisualization.prototype.start = function() {
   }
   clear();
 
-  jsNode = keep(context.createScriptProcessor(2048, 1, 1));
+  //jsNode = keep(context.createScriptProcessor(2048, 1, 1));
+  jsNode = context.createScriptProcessor(2048, 1, 1);
   jsNode.connect(context.destination);
 
   analyserNode = context.createAnalyser();
@@ -203,13 +204,27 @@ InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
       i, len, val;
 
   for (i=0,len = freqData.length; i<len; ++i) {
-    val = freqData[i];
+    //val = freqData[i];
+    val = freqData[logScale(i, freqData.length)];
+
     tempCtx.fillStyle = colorScale(val).hex();
     tempCtx.fillRect(this.initCanvasX, tempCanvas.height-i, 1, 1);
   }
   ++this.initCanvasX;
   copyFromTempCanvas.call(this);
 };
+
+// As defined by http://borismus.github.io/spectrogram/
+function logScale(index, total, opt_base) {
+  var base = opt_base || 2;
+  var logmax = logBase(total + 1, base);
+  var exp = logmax * index / total;
+  return Math.round(Math.pow(base, exp) - 1);
+}
+
+function logBase(val, base) {
+  return Math.log(val) / Math.log(base);
+}
 
 InstrumentVisualization.prototype.playStart = function() {
   var self = this,
@@ -220,7 +235,8 @@ InstrumentVisualization.prototype.playStart = function() {
       outNode = this.outNode,
       jsNode, analyserNode;
 
-  jsNode = keep(context.createScriptProcessor(2048, 1, 1));
+  //jsNode = keep(context.createScriptProcessor(2048, 1, 1));
+  jsNode = context.createScriptProcessor(2048, 1, 1);
   jsNode.connect(context.destination);
 
   analyserNode = context.createAnalyser();

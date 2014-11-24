@@ -1,22 +1,9 @@
-var asNEAT = require('asNEAT/asNEAT')['default'],
+var Visualizer,
+    asNEAT = require('asNEAT/asNEAT')['default'],
     ForceVisualization = require('asNEAT/forceVisualization')['default'],
     context = asNEAT.context;
 
 // TODO: Clean this up... it's so bad :'(
-
-var scriptNodes = {};
-var keep = (function() {
-  var nextNodeID = 1;
-  return function(node) {
-    node.id = node.id || (nextNodeID++);
-    scriptNodes[node.id] = node;
-    return node;
-  };
-}());
-var drop = function(node) {
-  delete scriptNodes[node.id];
-  return node;
-};
 
 var InstrumentVisualization = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
@@ -45,6 +32,11 @@ InstrumentVisualization.prototype.init = function() {
       tempCanvas = document.createElement('canvas'),
       tempCtx = tempCanvas.getContext('2d'),
       networkDiv = document.createElement('div');
+
+  // may not have loaded properly due to circular dependency
+  if (!Visualizer)
+    Visualizer = require('asNEAT/asNEAT-visualizer')['default'];
+
   this.canvas = canvas;
   this.ctx = ctx;
   this.tempCanvas = tempCanvas;
@@ -82,7 +74,7 @@ InstrumentVisualization.prototype.start = function() {
       tempCanvas = this.tempCanvas,
       tempCtx = this.tempCtx,
       clonedOutNode = this.clonedOutNode,
-      jsNode, analyserNode;
+      analyserNode;
 
   $(this.selector).append(this.$canvas);
   $(this.selector).append(this.$networkDiv);
@@ -125,15 +117,11 @@ InstrumentVisualization.prototype.start = function() {
   }
   clear();
 
-  jsNode = keep(context.createScriptProcessor(2048, 1, 1));
-  jsNode.connect(context.destination);
-
   analyserNode = context.createAnalyser();
   analyserNode.smoothingTimeConstant = 0;
   analyserNode.fftSize = this.fftSize;
 
   clonedOutNode.node.connect(analyserNode);
-  analyserNode.connect(jsNode);
 
   var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
       lastSum = 0,
@@ -141,7 +129,7 @@ InstrumentVisualization.prototype.start = function() {
       numBlank = 0,
       blankStepsUntilPause = this.blankStepsUntilPause;
 
-  jsNode.onaudioprocess = function() {
+  this.registeredInitId = Visualizer.registerRequestAnimationHandler(function() {
     var freqData = new Uint8Array(analyserNode.frequencyBinCount);
     analyserNode.getByteFrequencyData(freqData);
 
@@ -172,16 +160,11 @@ InstrumentVisualization.prototype.start = function() {
     }
 
     lastSum = sum;
-  };
+  });
 
   this.clearInitProcessing = function() {
-    // Don't null out onAudioProcess or drop the node...
-    // Even though it's more memory efficient, whenever chrome
-    // clears the node, chrome can crash...
-    //jsNode.onaudioprocess = null;
-    jsNode.disconnect();
+    Visualizer.unregisterRequestAnimationHandler(this.registeredInitId);
     analyserNode.disconnect();
-    //drop(jsNode);
   };
 
   this.clonedNetwork.play();
@@ -218,17 +201,13 @@ InstrumentVisualization.prototype.playStart = function() {
       tempCanvas = this.tempCanvas,
       tempCtx = this.tempCtx,
       outNode = this.outNode,
-      jsNode, analyserNode;
-
-  jsNode = keep(context.createScriptProcessor(2048, 1, 1));
-  jsNode.connect(context.destination);
+      analyserNode;
 
   analyserNode = context.createAnalyser();
   analyserNode.smoothingTimeConstant = 0;
   analyserNode.fftSize = this.fftSize;
 
   outNode.secondaryNode.connect(analyserNode);
-  analyserNode.connect(jsNode);
 
   var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
       lastSum = 0,
@@ -237,7 +216,7 @@ InstrumentVisualization.prototype.playStart = function() {
       numRepeats = blankStepsUntilPause,
       numBlank = blankStepsUntilPause;
 
-  jsNode.onaudioprocess = function() {
+  this.registeredId = Visualizer.registerRequestAnimationHandler(function() {
 
     var freqData = new Uint8Array(analyserNode.frequencyBinCount);
     analyserNode.getByteFrequencyData(freqData);
@@ -268,13 +247,11 @@ InstrumentVisualization.prototype.playStart = function() {
     }
 
     lastSum = sum;
-  };
+  });
 
   this.clearProcessing = function() {
-    //jsNode.onaudioprocess = null;
-    jsNode.disconnect();
+    Visualizer.unregisterRequestAnimationHandler(this.registeredId);
     analyserNode.disconnect();
-    //drop(jsNode);
   };
 };
 

@@ -4,28 +4,26 @@ var asNEAT = require('asNEAT/asNEAT')['default'],
 
 // TODO: Clean this up... it's so bad :'(
 
-var start = null;
-function animateInstrumentVisualizations(timestamp) {
-  if (!start) start = timestamp;
-  var progress = timestamp - start;
-
-  window.requestAnimationFrame(animateInstrumentVisualizations);
+var oldAnimationTimestamp = null;
+var requestAnimationHandlerIds = 0;
+var registeredAnimationFrameHandlers = {};
+function renderVisualizationFrame(timestamp) {
+  if (!oldAnimationTimestamp) oldAnimationTimestamp = timestamp;
+  var deltaTime = timestamp - oldAnimationTimestamp;
+  _.forEach(registeredAnimationFrameHandlers, function(handler) {
+    handler();
+  });
+  window.requestAnimationFrame(renderVisualizationFrame);
 }
-window.requestAnimationFrame(animateInstrumentVisualizations);
-
-var scriptNodes = {};
-var keep = (function() {
-  var nextNodeID = 1;
-  return function(node) {
-    node.id = node.id || (nextNodeID++);
-    scriptNodes[node.id] = node;
-    return node;
-  };
-}());
-var drop = function(node) {
-  delete scriptNodes[node.id];
-  return node;
+var registerRequestAnimationHandler = function(handler) {
+  var id = requestAnimationHandlerIds++;
+  registeredAnimationFrameHandlers[id] = handler;
+  return id;
 };
+var unregisterRequestAnimationHandler = function(id) {
+  delete registeredAnimationFrameHandlers[id];
+};
+window.requestAnimationFrame(renderVisualizationFrame);
 
 var InstrumentVisualization = function(parameters) {
   _.defaults(this, parameters, this.defaultParameters);
@@ -91,7 +89,7 @@ InstrumentVisualization.prototype.start = function() {
       tempCanvas = this.tempCanvas,
       tempCtx = this.tempCtx,
       clonedOutNode = this.clonedOutNode,
-      jsNode, analyserNode;
+      analyserNode;
 
   $(this.selector).append(this.$canvas);
   $(this.selector).append(this.$networkDiv);
@@ -134,16 +132,11 @@ InstrumentVisualization.prototype.start = function() {
   }
   clear();
 
-  //jsNode = keep(context.createScriptProcessor(2048, 1, 1));
-  jsNode = context.createScriptProcessor(2048, 1, 1);
-  jsNode.connect(context.destination);
-
   analyserNode = context.createAnalyser();
   analyserNode.smoothingTimeConstant = 0;
   analyserNode.fftSize = this.fftSize;
 
   clonedOutNode.node.connect(analyserNode);
-  analyserNode.connect(jsNode);
 
   var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
       lastSum = 0,
@@ -151,7 +144,7 @@ InstrumentVisualization.prototype.start = function() {
       numBlank = 0,
       blankStepsUntilPause = this.blankStepsUntilPause;
 
-  jsNode.onaudioprocess = function() {
+  this.registeredInitId = registerRequestAnimationHandler(function() {
     var freqData = new Uint8Array(analyserNode.frequencyBinCount);
     analyserNode.getByteFrequencyData(freqData);
 
@@ -182,16 +175,11 @@ InstrumentVisualization.prototype.start = function() {
     }
 
     lastSum = sum;
-  };
+  });
 
   this.clearInitProcessing = function() {
-    // Don't null out onAudioProcess or drop the node...
-    // Even though it's more memory efficient, whenever chrome
-    // clears the node, chrome can crash...
-    //jsNode.onaudioprocess = null;
-    jsNode.disconnect();
+    unregisterRequestAnimationHandler(this.registeredInitId);
     analyserNode.disconnect();
-    //drop(jsNode);
   };
 
   this.clonedNetwork.play();
@@ -213,27 +201,13 @@ InstrumentVisualization.prototype.initUpdateCanvas = function(freqData) {
       i, len, val;
 
   for (i=0,len = freqData.length; i<len; ++i) {
-    //val = freqData[i];
-    val = freqData[logScale(i, freqData.length)];
-
+    val = freqData[i];
     tempCtx.fillStyle = colorScale(val).hex();
     tempCtx.fillRect(this.initCanvasX, tempCanvas.height-i, 1, 1);
   }
   ++this.initCanvasX;
   copyFromTempCanvas.call(this);
 };
-
-// As defined by http://borismus.github.io/spectrogram/
-function logScale(index, total, opt_base) {
-  var base = opt_base || 2;
-  var logmax = logBase(total + 1, base);
-  var exp = logmax * index / total;
-  return Math.round(Math.pow(base, exp) - 1);
-}
-
-function logBase(val, base) {
-  return Math.log(val) / Math.log(base);
-}
 
 InstrumentVisualization.prototype.playStart = function() {
   var self = this,
@@ -242,18 +216,13 @@ InstrumentVisualization.prototype.playStart = function() {
       tempCanvas = this.tempCanvas,
       tempCtx = this.tempCtx,
       outNode = this.outNode,
-      jsNode, analyserNode;
-
-  //jsNode = keep(context.createScriptProcessor(2048, 1, 1));
-  jsNode = context.createScriptProcessor(2048, 1, 1);
-  jsNode.connect(context.destination);
+      analyserNode;
 
   analyserNode = context.createAnalyser();
   analyserNode.smoothingTimeConstant = 0;
   analyserNode.fftSize = this.fftSize;
 
   outNode.secondaryNode.connect(analyserNode);
-  analyserNode.connect(jsNode);
 
   var blankArray = new Uint8Array(analyserNode.frequencyBinCount),
       lastSum = 0,
@@ -262,7 +231,7 @@ InstrumentVisualization.prototype.playStart = function() {
       numRepeats = blankStepsUntilPause,
       numBlank = blankStepsUntilPause;
 
-  jsNode.onaudioprocess = function() {
+  this.registeredId = registerRequestAnimationHandler(function() {
 
     var freqData = new Uint8Array(analyserNode.frequencyBinCount);
     analyserNode.getByteFrequencyData(freqData);
@@ -293,13 +262,11 @@ InstrumentVisualization.prototype.playStart = function() {
     }
 
     lastSum = sum;
-  };
+  });
 
   this.clearProcessing = function() {
-    //jsNode.onaudioprocess = null;
-    jsNode.disconnect();
+    unregisterRequestAnimationHandler(this.registeredId);
     analyserNode.disconnect();
-    //drop(jsNode);
   };
 };
 
